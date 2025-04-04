@@ -21,5 +21,5 @@ def command_e(): #edit
 def command_p(): #print
     pass
 
-def command_p(): #quit
+def command_q(): #quit
     pass
