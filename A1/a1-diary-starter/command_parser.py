@@ -6,20 +6,34 @@
 # EMAIL boxuanz3@uci.edu
 # STUDENT ID 95535906
 
-def command_c(): #create
-    pass
+import shlex
 
-def command_d(): #delete
-    pass
+def parse_command(line):
+    try:
+        tokens = shlex.split(line)
+    except ValueError:
+        return None, {}, "ERROR"
 
-def command_o(): #load
-    pass
+    if not tokens:
+        return None, {}, "ERROR"
 
-def command_e(): #edit
-    pass
+    command = tokens[0].upper()
+    args = tokens[1:]
 
-def command_p(): #print
-    pass
+    options = {}
+    i = 0
+    while i < len(args):
+        token = args[i]
+        if token.startswith('-'):
+            if i + 1 >= len(args):
+                return None, {}, "ERROR"
+            options[token] = args[i + 1]
+            i += 2
+        else:
+            if "main_arg" not in options:
+                options["main_arg"] = token
+            else:
+                options["extra_arg"] = token
+            i += 1
 
-def command_q(): #quit
-    pass
+    return command, options, None
