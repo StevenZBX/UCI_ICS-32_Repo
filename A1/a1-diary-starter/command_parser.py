@@ -9,8 +9,13 @@
 from pathlib import Path
 import shlex
 
-def create1():
-    pass
+def create1(user):
+    user = shlex.split()
+    name = input('Username:\n')
+    pwd = input('Password:\n')
+    bio = input('Bio:\n')
+
+    
     
 
 
