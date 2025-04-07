@@ -6,34 +6,29 @@
 # EMAIL boxuanz3@uci.edu
 # STUDENT ID 95535906
 
+from pathlib import Path
 import shlex
 
-def parse_command(line):
-    try:
-        tokens = shlex.split(line)
-    except ValueError:
-        return None, {}, "ERROR"
+def create1():
+    pass
+    
 
-    if not tokens:
-        return None, {}, "ERROR"
 
-    command = tokens[0].upper()
-    args = tokens[1:]
+def delete1():
+    pass
 
-    options = {}
-    i = 0
-    while i < len(args):
-        token = args[i]
-        if token.startswith('-'):
-            if i + 1 >= len(args):
-                return None, {}, "ERROR"
-            options[token] = args[i + 1]
-            i += 2
-        else:
-            if "main_arg" not in options:
-                options["main_arg"] = token
-            else:
-                options["extra_arg"] = token
-            i += 1
 
-    return command, options, None
+def print1():
+    pass
+
+
+def load1():
+    pass
+
+
+def edit1():
+    pass
+
+
+def quit1():
+    pass
