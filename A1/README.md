@@ -8,7 +8,7 @@ The INPUT may have whitespaces. However, it should be enclosed with single or do
 [COMMAND] "[SOME INPUT]" [[-]OPTION] "[SOME INPUT]"
 To parse commands, you should use the shlex library and familiarize yourself with the split method. Learning how it works differently from Python’s default split method helps you build a robust command parser for your program to handle whitespaces and properly distinguish INPUT from any OPTION in the command.
 
-#Supported Commands
+# Supported Commands
 C - Creates a new notebook in the specified directory.
 A C command is used to create a new diary notebook in the specified directory. It is structured as below:
 
