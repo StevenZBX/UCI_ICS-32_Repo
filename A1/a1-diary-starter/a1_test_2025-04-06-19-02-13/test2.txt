@@ -1,4 +1,0 @@
-There are a few lines of text
-in this file
-instead of just a couple
-of them

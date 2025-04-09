@@ -1,7 +1,6 @@
 # a1_validitychecker.py
 #
-# ICS 32 Winter 2025
-# Assignment #1: File Explorer
+# Assignment #1: Diary
 #
 # NOTE: Heavily adapted from project1_sanitychecker.py written by Alex Thornton.
 #
@@ -38,7 +37,7 @@ import sys
 import threading
 import time
 import traceback
-import typing
+from typing import List, Union, Iterable
 
 
 
@@ -51,7 +50,7 @@ class TextProcess:
     _READ_INTERVAL_IN_SECONDS = 0.025
 
 
-    def __init__(self, args: [str], working_directory: str):
+    def __init__(self, args: List[str], working_directory: str):
         self._process = subprocess.Popen(
             args, cwd = working_directory, bufsize = 0,
             stdin = subprocess.PIPE, stdout = subprocess.PIPE,
@@ -91,7 +90,7 @@ class TextProcess:
             pass
 
 
-    def read_line(self, timeout: float = None) -> str or None:
+    def read_line(self, timeout: float = None) -> Union[str, None]:
         self._stdout_read_trigger.put('read')
         
         sleep_time = 0
@@ -245,7 +244,7 @@ class TestEndOfOutput:
 
 
 
-def write_test_file(dir_path: pathlib.Path, sub_path: pathlib.Path, lines: [str]) -> None:
+def write_test_file(dir_path: pathlib.Path, sub_path: pathlib.Path, lines: List[str]) -> None:
     path = dir_path / sub_path
 
     if not path.parent.exists():
@@ -281,7 +280,7 @@ TEST_FILES = [
         'Or maybe it should be about you',
         'I cannot decide'
     ]),
-    (pathlib.Path('Zzz/read.dsu'), [
+    (pathlib.Path('Zzz/read.json'), [
         'This is a line of text'
     ]),
     (pathlib.Path('Zzz/zzz.py'), [
@@ -289,10 +288,10 @@ TEST_FILES = [
         'for i in range(10):',
         '    print(\'ZZZZZZZZZZ\')'
     ]),
-    (pathlib.Path('Zzz/empty.dsu'), [
+    (pathlib.Path('Zzz/empty.json'), [
         
     ]),
-    (pathlib.Path('Zzz/multiline.dsu'), [
+    (pathlib.Path('Zzz/multiline.json'), [
         'This is a line of text',
         'This is another line of text',
         'How about one more?'
@@ -317,34 +316,28 @@ def create_test_directory() -> pathlib.Path:
 
 
 
-def make_test_lines(test_directory_path: pathlib.Path) -> ['TestLine']:
+def make_test_lines(test_directory_path: pathlib.Path) -> List[str]:
     test_lines = []
 
 
-    test_lines.append(TestInputLine('R "{}"'.format(
-        str(test_directory_path / 'test1.txt'))))
-    
-    test_lines.append(TestOutputLine('ERROR', 1.0))
-    
-    test_lines.append(TestInputLine('R "{}"'.format(
-        str(test_directory_path / 'Zzz/read.dsu'))))
-    
-    test_lines.append(TestOutputLine('This is a line of text', 10.0))
-    test_lines.append(TestInputLine('R "{}"'.format(
-        str(test_directory_path / 'Zzz/empty.dsu'))))
-    test_lines.append(TestOutputLine('EMPTY', 10.0))
     test_lines.append(TestInputLine('C'))
     test_lines.append(TestOutputLine('ERROR', 1.0))
+    
     test_lines.append(TestInputLine(
         'C "{}" -n test3'.format(str(test_directory_path))))
     test_lines.append(TestOutputLine(
-        str(test_directory_path / 'test3.dsu'), 10.0))
+        str(test_directory_path / 'test3.json'), 10.0))
+    
+
+    
     test_lines.append(TestInputLine('D'))
     test_lines.append(TestOutputLine('ERROR', 1.0))
+
     test_lines.append(TestInputLine('D "{}"'.format(
-        str(test_directory_path / 'test3.dsu'))))
+        str(test_directory_path / 'test3.json'))))
     test_lines.append(TestOutputLine(
-        str(test_directory_path / 'test3.dsu DELETED'), 10.0))
+        str(test_directory_path / 'test3.json DELETED'), 10.0))
+    
     test_lines.append(TestInputLine('Q'))
     test_lines.append(TestEndOfOutput(10.0))
     return test_lines
@@ -397,7 +390,7 @@ def start_process() -> TextProcess:
 
 
 
-def print_labeled_output(label: str, *msg_lines: typing.Iterable[str]) -> None:
+def print_labeled_output(label: str, *msg_lines: Iterable[str]) -> None:
     showed_first = False
 
     for msg_line in msg_lines:
@@ -412,7 +405,7 @@ def print_labeled_output(label: str, *msg_lines: typing.Iterable[str]) -> None:
 
 
 
-def run_test_lines(process: TextProcess, test_lines: 'TestLine') -> None:
+def run_test_lines(process: TextProcess, test_lines: List[str]) -> None:
     for line in test_lines:
         line.execute(process)
 

@@ -14,7 +14,7 @@
 
 import json, time
 from pathlib import Path
-
+from typing import Union
 
 class NotebookFileError(Exception):
     """
@@ -122,9 +122,12 @@ class Notebook:
         """Returns the list object containing all diaries that have been added to the Notebook object"""
         return self._diaries
 
-    def save(self, path: str) -> None:
+    def save(self, path: Union[str, Path]) -> None:
         """
-        Accepts an existing notebook file to save the current instance of Notebook to the file system.
+        Accepts a path to create and store a notebook file. 
+
+        Arguments:
+          path: The full path to create the notebook file. The path must include `.json` in the end.
 
         Example usage:
         
@@ -135,9 +138,12 @@ class Notebook:
 
         Raises NotebookFileError, IncorrectNotebookError
         """
-        p = Path(path)
+        if isinstance(path, Path):
+            p = path
+        else:
+            p = Path(path)
 
-        if p.exists() and p.suffix == '.json':
+        if p.parent.exists() and p.suffix == '.json':
             try:
                 f = open(p, 'w')
                 json.dump(self.__dict__, f, indent=4)
