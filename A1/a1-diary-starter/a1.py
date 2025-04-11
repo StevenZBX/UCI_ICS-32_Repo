@@ -8,21 +8,21 @@
 
 import shlex
 import command_parser
-import notebook
+from notebook import Notebook
 from pathlib import Path
 import os
 import json
 
 
-# def menu():
-#     print('This program is for manage notebooks for users')
-#     print('You can do these following with the format [COMMAND] [INPUT] [[-]OPTION] [INPUT]:')
-#     print('C: create')
-#     print('D: delete')
-#     print('O: load')
-#     print('E: edit')
-#     print('P: print')
-#     print('Q: quit')
+def menu():
+    print('This program is for manage notebooks for users')
+    print('You can do these following with the format [COMMAND] [INPUT] [[-]OPTION] [INPUT]:')
+    print('C: create')
+    print('D: delete')
+    print('O: load')
+    print('E: edit')
+    print('P: print')
+    print('Q: quit')
 
 
 def command():
@@ -44,7 +44,6 @@ if __name__ == "__main__":
     check = True
     while check:
         user = shlex.split(input())
-        # print(user)
         if user[0].upper() == 'Q':
                 check = False
         elif len(user) == 1:
