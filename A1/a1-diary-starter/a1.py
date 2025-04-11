@@ -45,13 +45,12 @@ if __name__ == "__main__":
     while check:
         user = shlex.split(input())
         # print(user)
-        if len(user) < 4:
+        if user[0].upper() == 'Q':
+                check = False
+        elif len(user) == 1:
             print('ERROR')
         else:
-            if user[0].upper() == 'Q':
-                check = False
-                print('Goodbye! Have a nice day')
-            elif user[0].upper() not in command_lst:
+            if user[0].upper() not in command_lst:
                 print('Invalid command!')
                 user = input('Please choose again:\n')
                 command()

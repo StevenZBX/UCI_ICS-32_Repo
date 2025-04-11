@@ -19,12 +19,11 @@ def create1(user):
     os.chdir(user[1])
     print(f'{os.getcwd()}/{diary_name}.json')
 
-    
-    
-
 
 def delete1(user):
-    pass
+    file_path = user[1]
+    os.remove(file_path)
+    print(f'{file_path} DELETED')
 
 
 def print1(user):
