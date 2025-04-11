@@ -12,6 +12,37 @@ import shlex
 import os
 import json
 
+def edit1(user):
+    # print('To edit notebook, you have 5 valid commands ')
+    # print('-user: Change username')
+    # print('-pwd: Change password')
+    # print('-bio: Change bio')
+    # print('-add: New diary')
+    # print('-del: Delete the diary in the list')
+    edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
+    user.remove('E')
+    print(user)
+    for index in range(1, len(user),2):
+        command = user[index]
+        print(user[index])
+        if command in edit_list:
+            if command == '-usr':
+                pass
+            elif command == '-pwd':
+                pass
+            elif command == '-bio':
+                pass
+            elif command == '-add':
+                pass
+            elif command == '-del':
+                pass
+        else:
+            print('Error: Invalid Command!')
+
+
+def print1(user):
+    pass
+
 def create1(user):
     username = input('Username:\n')
     password = input('Password:\n')
@@ -23,10 +54,20 @@ def create1(user):
     new_diary.touch() # Created file in the directory
     path = f'{(user[1])}/{diary_name}.json' # Changed the directory to the user input
     print(path, 'CREATED')
-    os.chdir(path)
     new_notebook = Notebook(username, password, bio)
     new_notebook.save(path)
-
+    
+    # New branch for user to edit or print file, or back to the previous choices
+    check = True
+    while check:
+        user = shlex.split(input('Editing or Printing the content of file? If leave this file, input Q.\n'))
+        if user[0].upper() == 'E':
+            edit1(user)
+        elif user[0].upper() == 'P':
+            print1(user)
+        elif user[0].upper() == 'Q':
+            check = False
+    
 
 def delete1(user):
     file_path = user[1]
@@ -34,19 +75,22 @@ def delete1(user):
     print(f'{file_path} DELETED')
 
 
-def print1(user):
-    pass
-
-
 def load1(user):
-    pass
-
-
-def edit1(user):
-    print('To edit notebook, you have 5 valid commands ')
-    print('-user: Change username')
-    print('-pwd: Change password')
-    print('-bio: Change bio')
-    print('-add: New diary')
-    print('-del: Delete the diary in the list')
+    path = user[1]
+    name = input('Username:\n')
+    pwd = input('Password:\n')
+    notebook = Notebook(name, pwd, bio = '')
+    notebook.load(path)
     
+    # Editing or Printing content after loading file
+    check = True
+    while check:
+        user = shlex.split(input('Editing or Printing the content of file? If leave this file, input Q.\n'))
+        if user[0].upper() == 'E':
+            edit1(user)
+        elif user[0].upper() == 'P':
+            print1(user)
+        elif user[0].upper() == 'Q':
+            check = False
+
+

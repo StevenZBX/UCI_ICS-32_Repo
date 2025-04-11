@@ -33,9 +33,11 @@ def command():
     elif user[0].upper() == 'P':
         command_parser.print1(user)
     elif user[0].upper() == 'E':
-        command_parser.edit1(user)
+        print('Error, choose a file to load or create a file')
     elif user[0].upper() == 'O':
         command_parser.load1(user)
+        if user[0].upper == 'E':
+            command_parser.edit1(user)
 
 
 if __name__ == "__main__":
@@ -43,9 +45,10 @@ if __name__ == "__main__":
     # menu()
     check = True
     while check:
-        user = shlex.split(input())
+        user = shlex.split(input('How can I help you?\n'))
         if user[0].upper() == 'Q':
                 check = False
+                print('Goodbye!')
         elif len(user) == 1:
             print('ERROR')
         else:
@@ -55,3 +58,10 @@ if __name__ == "__main__":
                 command()
             else:
                 command()
+
+
+# Prompt for testing
+# C "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08" -n test6
+# D "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08/test6.json"
+# O "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08/test6.json"
+# E -usr John -pwd "123 456"
