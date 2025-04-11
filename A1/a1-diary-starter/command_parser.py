@@ -8,31 +8,36 @@
 
 from pathlib import Path
 import shlex
+import os
+import json
 
-def create1():
-    name = input('Username:\n')
-    pwd = input('Password:\n')
-    bio = input('Bio:\n')
+def create1(user):
+    dir = Path(user[1])
+    diary_name = user[-1]
+    new_diary = dir / (diary_name + '.json')
+    new_diary.touch()
+    os.chdir(user[1])
+    print(f'{os.getcwd()}/{diary_name}.json')
 
     
     
 
 
-def delete1():
+def delete1(user):
     pass
 
 
-def print1():
+def print1(user):
     pass
 
 
-def load1():
+def load1(user):
     pass
 
 
-def edit1():
+def edit1(user):
     pass
 
 
-def quit1():
+def quit1(user):
     pass

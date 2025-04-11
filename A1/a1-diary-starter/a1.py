@@ -14,43 +14,46 @@ import os
 import json
 
 
-def menu():
-    print('This program is for manage notebooks for users')
-    print('You can do these following with the format [COMMAND] [INPUT] [[-]OPTION] [INPUT]:')
-    print('C: create')
-    print('D: delete')
-    print('O: load')
-    print('E: edit')
-    print('P: print')
-    print('Q: quit')
+# def menu():
+#     print('This program is for manage notebooks for users')
+#     print('You can do these following with the format [COMMAND] [INPUT] [[-]OPTION] [INPUT]:')
+#     print('C: create')
+#     print('D: delete')
+#     print('O: load')
+#     print('E: edit')
+#     print('P: print')
+#     print('Q: quit')
 
 
 def command():
     if user[0].upper() == 'C':
-        command_parser.create1()
+        command_parser.create1(user)
     elif user[0].upper() == 'D':
-        command_parser.delete1()
+        command_parser.delete1(user)
     elif user[0].upper() == 'P':
-        command_parser.print1()
+        command_parser.print1(user)
     elif user[0].upper() == 'E':
-        command_parser.edit1()
+        command_parser.edit1(user)
     elif user[0].upper() == 'O':
-        command_parser.load1()
+        command_parser.load1(user)
 
 
 if __name__ == "__main__":
     command_lst = ['C', 'D', 'E', 'O', 'P', 'Q']
-    menu()
+    # menu()
     check = True
     while check:
-        user = input("How can I help you?\n").split()
-        print(user)
-        if user[0].upper() == 'Q':
-            check = False
-            print('Goodbye! Have a nice day')
-        elif user[0].upper() not in command_lst:
-            print('Invalid command!')
-            user = input('Please choose again:\n')
-            command()
+        user = shlex.split(input())
+        # print(user)
+        if len(user) < 4:
+            print('ERROR')
         else:
-            command()
+            if user[0].upper() == 'Q':
+                check = False
+                print('Goodbye! Have a nice day')
+            elif user[0].upper() not in command_lst:
+                print('Invalid command!')
+                user = input('Please choose again:\n')
+                command()
+            else:
+                command()
