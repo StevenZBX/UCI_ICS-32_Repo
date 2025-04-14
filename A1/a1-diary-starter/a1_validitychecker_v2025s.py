@@ -38,7 +38,7 @@ import threading
 import time
 import traceback
 from typing import List, Union, Iterable
-
+import json
 
 
 class TextProcessReadTimeout(Exception):
@@ -254,7 +254,14 @@ def write_test_file(dir_path: pathlib.Path, sub_path: pathlib.Path, lines: List[
         for line in lines:
             test_file.write(line + '\n')
 
+def write_json_test_file(dir_path: pathlib.Path, sub_path: pathlib.Path, data) -> None:
+    path = dir_path / sub_path
 
+    if not path.parent.exists():
+        path.parent.mkdir(parents = True)
+
+    with path.open('w') as test_file:
+        json.dump(data, test_file)
 
 TEST_FILES = [
     (pathlib.Path('test1.txt'), [
@@ -296,6 +303,7 @@ TEST_FILES = [
         'This is another line of text',
         'How about one more?'
     ]),
+    (pathlib.Path('notebook.json'), {'username': 'mark', 'password': 'securepassword', 'bio':'I am mark', '_diaries': [{'entry': 'My first diary entry', 'timestamp': str(time.time())}]}),
 ]
 
 
@@ -310,7 +318,10 @@ def create_test_directory() -> pathlib.Path:
     test_directory_path.mkdir(parents = True)
 
     for sub_path, lines in TEST_FILES:
-        write_test_file(test_directory_path, sub_path, lines)
+        if isinstance(lines, dict):
+            write_json_test_file(test_directory_path, sub_path, lines)
+        else:
+            write_test_file(test_directory_path, sub_path, lines)
 
     return test_directory_path
 
@@ -325,13 +336,24 @@ def make_test_lines(test_directory_path: pathlib.Path) -> List[str]:
     
     test_lines.append(TestInputLine(
         'C "{}" -n test3'.format(str(test_directory_path))))
+    test_lines.append(TestInputLine("John"))
+    test_lines.append(TestInputLine("John123"))
+    test_lines.append(TestInputLine("A junior developer at UCI!"))
     test_lines.append(TestOutputLine(
-        str(test_directory_path / 'test3.json'), 10.0))
+        str(test_directory_path / 'test3.json') + ' CREATED', 10.0))
     
-
-    
+    test_lines.append(TestInputLine(
+        'O "{}"'.format(str(test_directory_path/'notebook.json'))))
+    test_lines.append(TestInputLine('mark'))
+    test_lines.append(TestInputLine('securepassword'))
+    test_lines.append(TestOutputLine('Notebook loaded.', 10.0))
+    test_lines.append(TestOutputLine('mark', 10.0))
+    test_lines.append(TestOutputLine('I am mark', 10.0))
+    test_lines.append(TestInputLine('E -bio new-bio'))
+    test_lines.append(TestInputLine('P -posts'))
+    test_lines.append(TestOutputLine('0: My first diary entry', 1.0))
     test_lines.append(TestInputLine('D'))
-    test_lines.append(TestOutputLine('ERROR', 1.0))
+    test_lines.append(TestOutputLine('ERROR', 10.0))
 
     test_lines.append(TestInputLine('D "{}"'.format(
         str(test_directory_path / 'test3.json'))))

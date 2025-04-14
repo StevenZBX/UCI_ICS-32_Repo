@@ -45,10 +45,10 @@ if __name__ == "__main__":
     # menu()
     check = True
     while check:
-        user = shlex.split(input('How can I help you?\n'))
+        user = shlex.split(input())#'How can I help you?\n'
         if user[0].upper() == 'Q':
                 check = False
-                print('Goodbye!')
+                # print('Goodbye!')
         elif len(user) == 1:
             print('ERROR')
         else:

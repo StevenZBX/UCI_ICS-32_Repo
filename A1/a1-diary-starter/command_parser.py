@@ -13,7 +13,7 @@ import os
 import json
 
 
-def edit1(user):
+def edit1(path, user):
     # print('To edit notebook, you have 5 valid commands ')
     # print('-user: Change username')
     # print('-pwd: Change password')
@@ -34,7 +34,7 @@ def edit1(user):
             elif command == '-bio':
                 pass
             elif command == '-add':
-                Notebook.add_diary(user[index+1])
+                Notebook.add_diary(path, user[index+1])
                 pass
             elif command == '-del':
                 Notebook.del_diary(user[index+1])
@@ -64,9 +64,9 @@ def print1(user):
 
 
 def create1(user):
-    username = input('Username: ')
-    password = input('Password: ')
-    bio = input('Bio: ')
+    username = input()#'Username: '
+    password = input()#'Password: '
+    bio = input()#'Bio: '
 
     dir = Path(user[1])
     diary_name = user[-1]
@@ -100,14 +100,14 @@ def load1(user):
     name = input('Username: ')
     pwd = input('Password: ')
     notebook = Notebook(name, pwd, bio = str)
-    notebook.load(path)
+    path = notebook.load(path)
     
     # Editing or Printing content after loading file
     check = True
     while check:
         user = shlex.split(input('Editing or Printing the content of file (input Q to back previous choice): '))
         if user[0].upper() == 'E':
-            edit1(user)
+            edit1(path, user)
         elif user[0].upper() == 'P':
             print1(user)
         elif user[0].upper() == 'Q':
