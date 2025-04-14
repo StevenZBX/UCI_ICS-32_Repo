@@ -61,8 +61,8 @@ if __name__ == "__main__":
 
 
 # Prompt for testing
-# C "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08" -n test6
-# D "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08/test6.json"
-# O "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/a1_test_2025-04-10-19-02-08/test6.json"
+# C "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder" -n notebook
+# D "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
+# O "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
 # E -usr John -pwd "123 456"
 # E -add "I had such a cool day at Six Flags with my friends"

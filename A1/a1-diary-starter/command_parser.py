@@ -13,12 +13,12 @@ import os
 import json
 
 
-def edit1(path, user):
+def edit1(notebook, user, path):
     # print('To edit notebook, you have 5 valid commands ')
     # print('-user: Change username')
     # print('-pwd: Change password')
     # print('-bio: Change bio')
-    # print('-add: New diary')
+    # print('-add: Add diary')
     # print('-del: Delete the diary in the list')
     edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
     user.remove('E')
@@ -26,18 +26,27 @@ def edit1(path, user):
     for index in range(0, len(user),2):
         command = user[index]
         print(user[index])
-        if command in edit_list:
+        if command in edit_list: # action for editing
             if command == '-usr':
-                pass
+                notebook.username = user[index+1]
+                notebook.save(path)
             elif command == '-pwd':
-                pass
+                notebook.password = user[index+1]
+                notebook.save(path)
             elif command == '-bio':
-                pass
+                notebook.bio = user[index+1]
+                notebook.save(path)
             elif command == '-add':
-                Notebook.add_diary(path, user[index+1])
-                pass
+                notebook.add_diary(user[index+1])
+                notebook.save(path)
             elif command == '-del':
-                Notebook.del_diary(user[index+1])
+                new_diary = notebook.del_diary(int(user[index+1]))
+                notebook.save(path)
+                if new_diary:
+                    print('Deleted')
+                    notebook.save(path)
+                else:
+                    print('Error: Not Found!')
         else:
             print('Error: Invalid Command!')
 
@@ -46,7 +55,7 @@ def print1(user):
     print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
     user.remove('P')
     for command in user:
-        if command in print_list:
+        if command in print_list: # action for printing
             if command == '-usr':
                 pass
             elif command == '-pwd':
@@ -76,16 +85,19 @@ def create1(user):
     print(path, 'CREATED')
     new_notebook = Notebook(username, password, bio)
     new_notebook.save(path)
-    
+
     # New branch for user to edit or print file, or back to the previous choices
+    notebook = Notebook('','','')
+    notebook.load(path)
     check = True
     while check:
         user = shlex.split(input('Editing or Printing the content of file (input Q to back previous choice): '))
         if user[0].upper() == 'E':
-            edit1(user)
+            edit1(notebook, user, path)
         elif user[0].upper() == 'P':
             print1(user)
         elif user[0].upper() == 'Q':
+            notebook.save(path)
             check = False
     
 
@@ -97,18 +109,27 @@ def delete1(user):
 
 def load1(user):
     path = user[1]
-    name = input('Username: ')
-    pwd = input('Password: ')
-    notebook = Notebook(name, pwd, bio = str)
-    path = notebook.load(path)
     
-    # Editing or Printing content after loading file
+    notebook = Notebook('','','')
+    notebook.load(path)
+    name = input()#'Username: 's
+    pwd = input()#'Password: '
+    if name == notebook.username and pwd == notebook.password:
+        print('Notebook loaded.')
+        print('Username:', notebook.username)
+        print('Bio:', notebook.bio)
+    else:
+        notebook.save(path)
+        print('Error: Invalid username or password')
+        load1(user)
+    # # Editing or Printing content after loading file
     check = True
     while check:
         user = shlex.split(input('Editing or Printing the content of file (input Q to back previous choice): '))
         if user[0].upper() == 'E':
-            edit1(path, user)
+            edit1(notebook, user, path)
         elif user[0].upper() == 'P':
             print1(user)
         elif user[0].upper() == 'Q':
+            notebook.save(path)
             check = False
