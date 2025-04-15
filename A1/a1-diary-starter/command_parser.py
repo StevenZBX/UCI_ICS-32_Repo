@@ -87,9 +87,9 @@ def print1(notebook, user, path):
 
 
 def create1(user):
-    username = input()#'Username: '
-    password = input()#'Password: '
-    bio = input()#'Bio: '
+    username = input('Username: ')
+    password = input('Password: ')
+    bio = input('Bio: ')
 
     dir = Path(user[1])
     diary_name = user[-1]
@@ -126,8 +126,8 @@ def load1(user):
     
     notebook = Notebook('','','')
     notebook.load(path)
-    name = input()#'Username: 's
-    pwd = input()#'Password: '
+    name = input('Username: ')
+    pwd = input('Password: ')
     if name == notebook.username and pwd == notebook.password:
         print('Notebook loaded.')
         print('Username:', notebook.username)

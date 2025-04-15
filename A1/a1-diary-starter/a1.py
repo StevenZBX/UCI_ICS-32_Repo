@@ -38,13 +38,13 @@ def command():
 
 if __name__ == "__main__":
     command_lst = ['C', 'D', 'E', 'O', 'P', 'Q']
-    # menu()
+    menu()
     check = True
     while check:
-        user = shlex.split(input())#'How can I help you?\n'
+        user = shlex.split(input('How can I help you? '))
         if user[0].upper() == 'Q':
                 check = False
-                # print('Goodbye!')
+                print('Goodbye!')
         elif len(user) == 1:
             print('ERROR')
         else:
