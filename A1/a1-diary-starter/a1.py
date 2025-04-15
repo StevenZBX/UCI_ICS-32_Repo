@@ -15,14 +15,14 @@ import json
 
 
 def menu():
-    print('This program is for manage notebooks for users')
-    print('You can do these following with the format [COMMAND] [INPUT] [[-]OPTION] [INPUT]:')
-    print('C: create')
-    print('D: delete')
-    print('O: load')
-    print('E: edit')
-    print('P: print')
-    print('Q: quit')
+    print('This program is for users to manage notebooks.')
+    print('C: create (C <PATH> -n <DIARY_NAME>)')
+    print('D: delete (D <Path>)')
+    print('O: load (O <Path>)')
+    print("E: edit (E -[Command] '[Content of input]')")
+    print('P: print (P -[Command] [Content of file])')
+    print('Q: quit (Q or q)')
+    print('Note! Please Load a file or Create a file to Edit or Print content!')
 
 
 def command():
@@ -33,7 +33,7 @@ def command():
     elif user[0].upper() == 'O':
         command_parser.load1(user)
     elif user[0].upper() == 'E' or user[0].upper == 'P':
-        print('Error, choose a file to load or create a file')
+        print('Error, please load a file or create a file')
 
 
 if __name__ == "__main__":
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         if user[0].upper() == 'Q':
                 check = False
                 print('Goodbye!')
-        elif len(user) == 1:
+        elif len(user) < 2:
             print('ERROR')
         else:
             if user[0].upper() not in command_lst:

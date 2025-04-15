@@ -14,14 +14,26 @@ import shlex
 import os
 import json
 
+def edit_menu():
+    print('To edit notebook, you have 5 valid commands')
+    print('-user: Change username')
+    print('-pwd: Change password')
+    print('-bio: Change biography')
+    print('-add: Add diary')
+    print('-del: Delete the diary in the list')
+
+
+def print_menu():
+    print('To print notebook, you have 6 valid commands')
+    print('-usr: Printing username')
+    print('-pwd: Printing password')
+    print('-bio: Printing biography')
+    print('-diaries: Printing all diaries in notebook')
+    print('-diary [ID]: Printing specific diary in the notebook')
+    print('-all: Printing all content in the notebook')
+
 
 def edit1(notebook, user, path):
-    # print('To edit notebook, you have 5 valid commands ')
-    # print('-user: Change username')
-    # print('-pwd: Change password')
-    # print('-bio: Change bio')
-    # print('-add: Add diary')
-    # print('-del: Delete the diary in the list')
     edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
     user.remove('E')
     for index in range(0, len(user),2):
@@ -58,28 +70,36 @@ def print1(notebook, user, path):
     for index in range(len(user)):
         if user[index] in print_list: # action for printing
             if user[index] == '-usr':
-                print(notebook.username)
+                print('Username:', notebook.username)
             elif user[index] == '-pwd':
-                print(notebook.password)
+                print('Password:',notebook.password)
             elif user[index] == '-bio':
-                print(notebook.bio)
+                print('Biography:',notebook.bio)
             elif user[index] == '-diaries':
                 diaries = notebook.get_diaries()
+                print('All diaies:')
+                sequence = 1
                 for diary in diaries:
-                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                    print(f'{time}: {diary.entry}')
+                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
+                    print(f'{sequence}. {time}: {diary.entry}')
+                    sequence += 1
             elif user[index] == '-diary':
                 diary_index = int(user[index+1])
                 current_diary = notebook.get_diaries()[diary_index]
                 time = datetime.fromtimestamp(current_diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+                print('Diary:')
                 print(f'{time}: {current_diary.entry}')
             elif user[index] == '-all':
-                print(notebook.username)
-                print(notebook.password)
-                print(notebook.bio)
-                for diary in notebook.get_diaries():
-                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                    print(f'{time}: {diary.entry}')
+                print('Username:', notebook.username)
+                print('Password:',notebook.password)
+                print('Biography:',notebook.bio)
+                diaries = notebook.get_diaries()
+                print('All diaies:')
+                sequence = 1
+                for diary in diaries:
+                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
+                    print(f'{sequence}. {time}: {diary.entry}')
+                    sequence += 1
         elif user[index].isnumeric():
             pass
         else:
@@ -105,10 +125,14 @@ def create1(user):
     notebook.load(path)
     check = True
     while check:
-        user = shlex.split(input('Editing or Printing the content of file (input Q to back previous choice): '))
-        if user[0].upper() == 'E':
+        user = input('Editing(E) or Printing(P) the content of file (input Q to back previous choice): ')
+        if user.upper() == 'E':
+            edit_menu()
+            user = shlex.split(input('What do your want to change: '))
             edit1(notebook, user, path)
         elif user[0].upper() == 'P':
+            print_menu()
+            user = shlex.split(input('What do you want to print: '))
             print1(notebook, user, path)
         elif user[0].upper() == 'Q':
             notebook.save(path)
@@ -139,10 +163,14 @@ def load1(user):
     # # Editing or Printing content after loading file
     check = True
     while check:
-        user = shlex.split(input('Editing or Printing the content of file (input Q to back previous choice): '))
-        if user[0].upper() == 'E':
+        user = input('Editing(E) or Printing(P) the content of file (input Q to back previous choice): ')
+        if user.upper() == 'E':
+            edit_menu()
+            user = shlex.split(input('What do your want to change: '))
             edit1(notebook, user, path)
-        elif user[0].upper() == 'P':
+        elif user.upper() == 'P':
+            print_menu()
+            user = shlex.split(input('What do you want to print: '))
             print1(notebook, user, path)
         elif user[0].upper() == 'Q':
             notebook.save(path)
