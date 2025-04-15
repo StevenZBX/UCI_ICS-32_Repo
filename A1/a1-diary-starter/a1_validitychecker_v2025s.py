@@ -303,7 +303,7 @@ TEST_FILES = [
         'This is another line of text',
         'How about one more?'
     ]),
-    (pathlib.Path('notebook.json'), {'username': 'mark', 'password': 'securepassword', 'bio':'I am mark', '_diaries': [{'entry': 'My first diary entry', 'timestamp': str(time.time())}]}),
+    (pathlib.Path('notebook.json'), {'username': 'mark', 'password': 'securepassword', 'bio':'I am mark', '_diaries': [{'entry': 'My first diary entry', 'timestamp': str(time.time())},{'entry': 'My second diary entry', 'timestamp': str(time.time())} ]}),
 ]
 
 
@@ -350,8 +350,9 @@ def make_test_lines(test_directory_path: pathlib.Path) -> List[str]:
     test_lines.append(TestOutputLine('mark', 10.0))
     test_lines.append(TestOutputLine('I am mark', 10.0))
     test_lines.append(TestInputLine('E -bio new-bio'))
-    test_lines.append(TestInputLine('P -posts'))
+    test_lines.append(TestInputLine('P -diaries'))
     test_lines.append(TestOutputLine('0: My first diary entry', 1.0))
+    test_lines.append(TestOutputLine('1: My second diary entry', 1.0))
     test_lines.append(TestInputLine('D'))
     test_lines.append(TestOutputLine('ERROR', 10.0))
 

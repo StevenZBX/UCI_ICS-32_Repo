@@ -30,14 +30,10 @@ def command():
         command_parser.create1(user)
     elif user[0].upper() == 'D':
         command_parser.delete1(user)
-    elif user[0].upper() == 'P':
-        command_parser.print1(user)
-    elif user[0].upper() == 'E':
-        print('Error, choose a file to load or create a file')
     elif user[0].upper() == 'O':
         command_parser.load1(user)
-        if user[0].upper == 'E':
-            command_parser.edit1(user)
+    elif user[0].upper() == 'E' or user[0].upper == 'P':
+        print('Error, choose a file to load or create a file')
 
 
 if __name__ == "__main__":
@@ -64,5 +60,5 @@ if __name__ == "__main__":
 # C "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder" -n notebook
 # D "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
 # O "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
-# E -usr John -pwd "123 456"
+# E -usr Steven -pwd "123 456"
 # E -add "I had such a cool day at Six Flags with my friends"
