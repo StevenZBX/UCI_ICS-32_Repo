@@ -1,0 +1,11 @@
+{
+    "username": "Steven",
+    "password": "1234",
+    "bio": "Test for format",
+    "_diaries": [
+        {
+            "entry": "Test for format",
+            "timestamp": 1744857871.7382028
+        }
+    ]
+}

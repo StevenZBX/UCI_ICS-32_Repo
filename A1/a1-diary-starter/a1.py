@@ -23,6 +23,7 @@ def menu():
     print('P: print (P -[Command] [Content of file])')
     print('Q: quit (Q or q)')
     print('Note! Please Load a file or Create a file to Edit or Print content!')
+    print()
 
 
 def command_file():
@@ -66,6 +67,7 @@ if __name__ == "__main__":
                     print('You did not load or create a file!')
                 except IndexError:
                     print('Incomplete Command!')
+        print()
 
 
 # Prompt for testing
