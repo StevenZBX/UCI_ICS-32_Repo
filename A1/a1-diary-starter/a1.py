@@ -25,35 +25,47 @@ def menu():
     print('Note! Please Load a file or Create a file to Edit or Print content!')
 
 
-def command():
+def command_file():
     if user[0].upper() == 'C':
-        command_parser.create1(user)
-    elif user[0].upper() == 'D':
-        command_parser.delete1(user)
+        path, notebook = command_parser.create1(user)
+        return path, notebook
     elif user[0].upper() == 'O':
-        command_parser.load1(user)
-    elif user[0].upper() == 'E' or user[0].upper == 'P':
-        print('Error, please load a file or create a file')
+        path, notebook = command_parser.load1(user)
+        return path, notebook
+
+def command_content():
+    if user[0].upper() == 'D':
+        command_parser.delete1(user)
+    elif user[0].upper() == 'E':
+        command_parser.edit1(notebook, user, path)
+    elif user[0].upper() == 'P':
+        command_parser.print1(notebook, user)
 
 
 if __name__ == "__main__":
-    command_lst = ['C', 'D', 'E', 'O', 'P', 'Q']
+    command_lst_file = ['C', 'O']
+    command_lst_content = ['D', 'E', 'P']
     menu()
     check = True
     while check:
-        user = shlex.split(input('How can I help you? '))
+        user = shlex.split(input())
         if user[0].upper() == 'Q':
                 check = False
                 print('Goodbye!')
         elif len(user) < 2:
             print('ERROR')
         else:
-            if user[0].upper() not in command_lst:
+            if user[0].upper() not in command_lst_file and user[0].upper() not in command_lst_content:
                 print('Invalid command!')
-                user = input('Please choose again:\n')
-                command()
-            else:
-                command()
+            elif user[0].upper() in command_lst_file:
+                path, notebook = command_file()
+            elif user[0].upper() in command_lst_content:
+                try:
+                    command_content()
+                except NameError:
+                    print('You did not load or create a file!')
+                except IndexError:
+                    print('Incomplete Command!')
 
 
 # Prompt for testing

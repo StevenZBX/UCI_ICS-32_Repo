@@ -1,0 +1,15 @@
+{
+    "username": "ZBX",
+    "password": "123456",
+    "bio": "Test for notebook3",
+    "_diaries": [
+        {
+            "entry": "Test for editing",
+            "timestamp": 1744752591.5074291
+        },
+        {
+            "entry": "Test for timestamp",
+            "timestamp": 1744752627.070166
+        }
+    ]
+}

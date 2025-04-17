@@ -1,7 +1,7 @@
 {
-    "username": "Steven",
-    "password": "123456",
-    "bio": "test for diary",
+    "username": "STEVEN_BOXUAN",
+    "password": "zbx123456",
+    "bio": "Diary for testing",
     "_diaries": [
         {
             "entry": "Test for editing",
@@ -10,6 +10,14 @@
         {
             "entry": "Testing for guiding user",
             "timestamp": 1744738156.4331799
+        },
+        {
+            "entry": "Test",
+            "timestamp": 1744855908.112736
+        },
+        {
+            "entry": "New Version updated",
+            "timestamp": 1744856353.7960792
         }
     ]
 }

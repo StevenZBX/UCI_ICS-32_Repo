@@ -64,7 +64,7 @@ def edit1(notebook, user, path):
             print('Error: Invalid Command!')
 
 
-def print1(notebook, user, path):
+def print1(notebook, user):
     print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
     user.remove('P')
     for index in range(len(user)):
@@ -78,27 +78,27 @@ def print1(notebook, user, path):
             elif user[index] == '-diaries':
                 diaries = notebook.get_diaries()
                 print('All diaies:')
-                sequence = 1
+                sequence = 0
                 for diary in diaries:
                     time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                    print(f'{sequence}. {time}: {diary.entry}')
+                    print(f'{sequence}. ({time}): {diary.entry}')
                     sequence += 1
             elif user[index] == '-diary':
                 diary_index = int(user[index+1])
                 current_diary = notebook.get_diaries()[diary_index]
                 time = datetime.fromtimestamp(current_diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
                 print('Diary:')
-                print(f'{time}: {current_diary.entry}')
+                print(f'({time}) {current_diary.entry}') 
             elif user[index] == '-all':
                 print('Username:', notebook.username)
                 print('Password:',notebook.password)
                 print('Biography:',notebook.bio)
                 diaries = notebook.get_diaries()
                 print('All diaies:')
-                sequence = 1
+                sequence = 0
                 for diary in diaries:
                     time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                    print(f'{sequence}. {time}: {diary.entry}')
+                    print(f'{sequence}. ({time}): {diary.entry}') #
                     sequence += 1
         elif user[index].isnumeric():
             pass
@@ -107,9 +107,9 @@ def print1(notebook, user, path):
 
 
 def create1(user):
-    username = input('Username: ')
-    password = input('Password: ')
-    bio = input('Bio: ')
+    username = input()
+    password = input()
+    bio = input()
 
     dir = Path(user[1])
     diary_name = user[-1]
@@ -120,24 +120,7 @@ def create1(user):
     new_notebook = Notebook(username, password, bio)
     new_notebook.save(path)
 
-    # New branch for user to edit or print file, or back to the previous choices
-    notebook = Notebook('','','')
-    notebook.load(path)
-    check = True
-    while check:
-        user = input('Editing(E) or Printing(P) the content of file (input Q to back previous choice): ')
-        if user.upper() == 'E':
-            edit_menu()
-            user = shlex.split(input('What do your want to change: '))
-            edit1(notebook, user, path)
-        elif user[0].upper() == 'P':
-            print_menu()
-            user = shlex.split(input('What do you want to print: '))
-            print1(notebook, user, path)
-        elif user[0].upper() == 'Q':
-            notebook.save(path)
-            check = False
-    
+    return path, new_notebook
 
 def delete1(user):
     file_path = user[1]
@@ -147,31 +130,17 @@ def delete1(user):
 
 def load1(user):
     path = user[1]
-    
     notebook = Notebook('','','')
     notebook.load(path)
-    name = input('Username: ')
-    pwd = input('Password: ')
+    name = input()
+    pwd = input()
     if name == notebook.username and pwd == notebook.password:
         print('Notebook loaded.')
-        print('Username:', notebook.username)
-        print('Bio:', notebook.bio)
+        print(notebook.username)
+        print(notebook.bio)
+        return path, notebook
     else:
         notebook.save(path)
         print('Error: Invalid username or password')
         load1(user)
-    # # Editing or Printing content after loading file
-    check = True
-    while check:
-        user = input('Editing(E) or Printing(P) the content of file (input Q to back previous choice): ')
-        if user.upper() == 'E':
-            edit_menu()
-            user = shlex.split(input('What do your want to change: '))
-            edit1(notebook, user, path)
-        elif user.upper() == 'P':
-            print_menu()
-            user = shlex.split(input('What do you want to print: '))
-            print1(notebook, user, path)
-        elif user[0].upper() == 'Q':
-            notebook.save(path)
-            check = False
+        

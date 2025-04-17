@@ -1,0 +1,11 @@
+{
+    "username": "ZBX",
+    "password": "123",
+    "bio": "test",
+    "_diaries": [
+        {
+            "entry": "First test for notebook2",
+            "timestamp": 1744739172.689873
+        }
+    ]
+}
