@@ -10,11 +10,10 @@ from datetime import datetime
 from notebook import Diary
 from notebook import Notebook
 from pathlib import Path
-import shlex
 import os
-import json
 
-def edit_menu():
+
+def edit_menu() -> None:
     print('To edit notebook, you have 5 valid commands')
     print('-user: Change username')
     print('-pwd: Change password')
@@ -23,7 +22,7 @@ def edit_menu():
     print('-del: Delete the diary in the list')
 
 
-def print_menu():
+def print_menu() -> None:
     print('To print notebook, you have 6 valid commands')
     print('-usr: Printing username')
     print('-pwd: Printing password')
@@ -33,7 +32,7 @@ def print_menu():
     print('-all: Printing all content in the notebook')
 
 
-def edit1(notebook, user, path):
+def edit1(notebook, user, path) -> None:
     edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
     user.remove('E')
     for index in range(0, len(user),2):
@@ -64,7 +63,7 @@ def edit1(notebook, user, path):
             print('Error: Invalid Command!')
 
 
-def print1(notebook, user):
+def print1(notebook, user) -> None:
     print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
     user.remove('P')
     for index in range(len(user)):
@@ -106,7 +105,7 @@ def print1(notebook, user):
             print('Error: Invalid command!')
 
 
-def create1(user):
+def create1(user) -> tuple[str, Notebook]:
     username = input('Username: ')
     password = input('Password: ')
     bio = input('Biography: ')
@@ -122,13 +121,13 @@ def create1(user):
 
     return path, new_notebook
 
-def delete1(user):
+def delete1(user) -> None:
     file_path = user[1]
     os.remove(file_path) # Deleted the correspond file
     print(f'{file_path} DELETED')
 
 
-def load1(user):
+def load1(user) -> tuple[str, Notebook]:
     path = user[1]
     notebook = Notebook('','','')
     notebook.load(path)

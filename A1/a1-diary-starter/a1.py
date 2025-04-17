@@ -8,10 +8,6 @@
 
 import shlex
 import command_parser
-from notebook import Notebook
-from pathlib import Path
-import os
-import json
 
 
 def menu():
