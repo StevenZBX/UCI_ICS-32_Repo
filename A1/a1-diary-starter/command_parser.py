@@ -13,25 +13,6 @@ from pathlib import Path
 import os
 
 
-def edit_menu() -> None:
-    print('To edit notebook, you have 5 valid commands')
-    print('-user: Change username')
-    print('-pwd: Change password')
-    print('-bio: Change biography')
-    print('-add: Add diary')
-    print('-del: Delete the diary in the list')
-
-
-def print_menu() -> None:
-    print('To print notebook, you have 6 valid commands')
-    print('-usr: Printing username')
-    print('-pwd: Printing password')
-    print('-bio: Printing biography')
-    print('-diaries: Printing all diaries in notebook')
-    print('-diary [ID]: Printing specific diary in the notebook')
-    print('-all: Printing all content in the notebook')
-
-
 def edit1(notebook, user, path) -> None: # Command for editing notebook obejct, when the command finished, the revision will save in the notebook
     edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
     user.remove('E')
@@ -55,12 +36,11 @@ def edit1(notebook, user, path) -> None: # Command for editing notebook obejct, 
                 revise_diary = notebook.del_diary(int(user[index+1]))
                 notebook.save(path)
                 if revise_diary:
-                    print('Deleted')
                     notebook.save(path)
                 else:
-                    print('Error: Not Found!')
+                    print('ERROR')
         else:
-            print('Error: Invalid Command!')
+            print('ERROR')
 
 
 def print1(notebook, user) -> None: # Command for printing content of notebook obejct
@@ -70,48 +50,43 @@ def print1(notebook, user) -> None: # Command for printing content of notebook o
         for index in range(len(user)):
             if user[index] in print_list: # action for printing
                 if user[index] == '-usr':
-                    print('Username: ', notebook.username)
+                    print(notebook.username)
                 elif user[index] == '-pwd':
-                    print('Password: ',notebook.password)
+                    print(notebook.password)
                 elif user[index] == '-bio':
-                    print('Biography: ',notebook.bio)
+                    print(notebook.bio)
                 elif user[index] == '-diaries':
                     diaries = notebook.get_diaries()
-                    print('All diaies:')
                     sequence = 0
                     for diary in diaries:
-                        time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                        print(f'{sequence}. ({time}): {diary.entry}')
+                        print(f'{sequence}: {diary.entry}')
                         sequence += 1
                 elif user[index] == '-diary':
                     diary_index = int(user[index+1])
                     current_diary = notebook.get_diaries()[diary_index]
-                    time = datetime.fromtimestamp(current_diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
                     print('Diary:')
-                    print(f'({time}) {current_diary.entry}') 
+                    print(f'{current_diary.entry}') 
                 elif user[index] == '-all':
-                    print('Username:', notebook.username)
-                    print('Password:',notebook.password)
-                    print('Biography:',notebook.bio)
+                    print(notebook.username)
+                    print(notebook.password)
+                    print(notebook.bio)
                     diaries = notebook.get_diaries()
-                    print('All diaies:')
                     sequence = 0
                     for diary in diaries:
-                        time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                        print(f'{sequence}. ({time}): {diary.entry}')
+                        print(f'{sequence}. {diary.entry}')
                         sequence += 1
             elif user[index].isnumeric():
                 pass
             else:
-                print('Error: Invalid command!')
+                print('ERROR')
     except IndexError:
-        print('Invalid index in the notebook!')
+        print('ERROR')
 
 
 def create1(user) -> tuple[str, Notebook]: # Command for creating a new notebook obejct, when the notebook created, it will load automatically
-    username = input('Username: ')
-    password = input('Password: ')
-    bio = input('Biography: ')
+    username = input()
+    password = input()
+    bio = input()
 
     dir = Path(user[1])
     diary_name = user[-1]
@@ -134,14 +109,14 @@ def load1(user) -> tuple[str, Notebook]: # Command for loading a notebook in the
     path = user[1]
     notebook = Notebook('', '', '')
     notebook.load(path)
-    name = input('Username: ')
-    pwd = input('Password: ')
+    name = input()
+    pwd = input()
     if name == notebook.username and pwd == notebook.password: # when the username and password is correct, the notebook will load
         print('Notebook loaded.')
-        print('Username: ', notebook.username)
-        print('Bio: ', notebook.bio)
+        print(notebook.username)
+        print(notebook.bio)
         return path, notebook
     else: # otherwise, the notebook will close and repeat to ask username and password
         notebook.save(path)
-        print('Error: Invalid username or password')
+        print('ERROR')
         load1(user)
