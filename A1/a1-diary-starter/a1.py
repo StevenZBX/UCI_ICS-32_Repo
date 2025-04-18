@@ -19,7 +19,7 @@ def menu():
     print('P: print (P -[Command] [Content of file])')
     print('Q: quit (Q or q)')
     print('Note! Please Load a file or Create a file to Edit or Print content!')
-    print()
+    print('-'*60)
 
 
 def command_file():
@@ -45,7 +45,8 @@ if __name__ == "__main__":
     menu()
     check = True
     while check:
-        user = shlex.split(input())
+        user = shlex.split(input('Input Command: '))
+        print()
         if user[0].upper() == 'Q':
                 check = False
                 print('Goodbye!')
@@ -55,7 +56,7 @@ if __name__ == "__main__":
             if user[0].upper() not in command_lst_file and user[0].upper() not in command_lst_content:
                 print('Invalid command!')
             elif user[0].upper() in command_lst_file:
-                path, notebook = command_file()
+                    path, notebook = command_file()
             elif user[0].upper() in command_lst_content:
                 try:
                     command_content()
@@ -63,12 +64,4 @@ if __name__ == "__main__":
                     print('You did not load or create a file!')
                 except IndexError:
                     print('Incomplete Command!')
-        print()
-
-
-# Prompt for testing
-# C "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder" -n notebook
-# D "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
-# O "/Users/zbx/Desktop/Spring2025/ICS-32/assignment/A1/a1-diary-starter/test folder/notebook.json"
-# E -usr Steven -pwd "123 456"
-# E -add "I had such a cool day at Six Flags with my friends"
+        print('-'*60)
