@@ -1,0 +1,27 @@
+{
+    "username": "zbx",
+    "password": "123",
+    "bio": "test",
+    "_diaries": [
+        {
+            "entry": "Test in the terminal",
+            "timestamp": 1745001551.199025
+        },
+        {
+            "entry": "Second Test",
+            "timestamp": 1745001562.121061
+        },
+        {
+            "entry": "Test for adding",
+            "timestamp": 1745001576.263069
+        },
+        {
+            "entry": "Test for printing",
+            "timestamp": 1745001584.3001852
+        },
+        {
+            "entry": "Test for deleting",
+            "timestamp": 1745001595.924505
+        }
+    ]
+}

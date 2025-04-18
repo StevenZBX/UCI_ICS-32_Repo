@@ -64,45 +64,48 @@ def edit1(notebook, user, path) -> None: # Command for editing notebook obejct, 
 
 
 def print1(notebook, user) -> None: # Command for printing content of notebook obejct
-    print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
-    user.remove('P')
-    for index in range(len(user)):
-        if user[index] in print_list: # action for printing
-            if user[index] == '-usr':
-                print('Username: ', notebook.username)
-            elif user[index] == '-pwd':
-                print('Password: ',notebook.password)
-            elif user[index] == '-bio':
-                print('Biography: ',notebook.bio)
-            elif user[index] == '-diaries':
-                diaries = notebook.get_diaries()
-                print('All diaies:')
-                sequence = 0
-                for diary in diaries:
-                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                    print(f'{sequence}. ({time}): {diary.entry}')
-                    sequence += 1
-            elif user[index] == '-diary':
-                diary_index = int(user[index+1])
-                current_diary = notebook.get_diaries()[diary_index]
-                time = datetime.fromtimestamp(current_diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
-                print('Diary:')
-                print(f'({time}) {current_diary.entry}') 
-            elif user[index] == '-all':
-                print('Username:', notebook.username)
-                print('Password:',notebook.password)
-                print('Biography:',notebook.bio)
-                diaries = notebook.get_diaries()
-                print('All diaies:')
-                sequence = 0
-                for diary in diaries:
-                    time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
-                    print(f'{sequence}. ({time}): {diary.entry}')
-                    sequence += 1
-        elif user[index].isnumeric():
-            pass
-        else:
-            print('Error: Invalid command!')
+    try:
+        print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
+        user.remove('P')
+        for index in range(len(user)):
+            if user[index] in print_list: # action for printing
+                if user[index] == '-usr':
+                    print('Username: ', notebook.username)
+                elif user[index] == '-pwd':
+                    print('Password: ',notebook.password)
+                elif user[index] == '-bio':
+                    print('Biography: ',notebook.bio)
+                elif user[index] == '-diaries':
+                    diaries = notebook.get_diaries()
+                    print('All diaies:')
+                    sequence = 0
+                    for diary in diaries:
+                        time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
+                        print(f'{sequence}. ({time}): {diary.entry}')
+                        sequence += 1
+                elif user[index] == '-diary':
+                    diary_index = int(user[index+1])
+                    current_diary = notebook.get_diaries()[diary_index]
+                    time = datetime.fromtimestamp(current_diary.timestamp).strftime("%Y-%m-%d %H:%M:%S")
+                    print('Diary:')
+                    print(f'({time}) {current_diary.entry}') 
+                elif user[index] == '-all':
+                    print('Username:', notebook.username)
+                    print('Password:',notebook.password)
+                    print('Biography:',notebook.bio)
+                    diaries = notebook.get_diaries()
+                    print('All diaies:')
+                    sequence = 0
+                    for diary in diaries:
+                        time = datetime.fromtimestamp(diary.timestamp).strftime("%Y-%m-%d %H:%M:%S") # convert timestamp to readable time
+                        print(f'{sequence}. ({time}): {diary.entry}')
+                        sequence += 1
+            elif user[index].isnumeric():
+                pass
+            else:
+                print('Error: Invalid command!')
+    except IndexError:
+        print('Invalid index in the notebook!')
 
 
 def create1(user) -> tuple[str, Notebook]: # Command for creating a new notebook obejct, when the notebook created, it will load automatically
@@ -129,17 +132,16 @@ def delete1(user) -> None: # Command for deleting a file in the specifc path
 
 def load1(user) -> tuple[str, Notebook]: # Command for loading a notebook in the path
     path = user[1]
-    notebook = Notebook('','','')
+    notebook = Notebook('', '', '')
     notebook.load(path)
     name = input('Username: ')
     pwd = input('Password: ')
     if name == notebook.username and pwd == notebook.password: # when the username and password is correct, the notebook will load
         print('Notebook loaded.')
-        print('Username: ',notebook.username)
+        print('Username: ', notebook.username)
         print('Bio: ', notebook.bio)
         return path, notebook
     else: # otherwise, the notebook will close and repeat to ask username and password
         notebook.save(path)
         print('Error: Invalid username or password')
         load1(user)
-    

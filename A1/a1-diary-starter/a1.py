@@ -8,21 +8,28 @@
 
 import shlex
 import command_parser
+from notebook import Notebook
 
 
-def menu():
+def menu() -> None:
     print('This program is for users to manage notebooks.')
+    print()
     print('C: create (C <PATH> -n <DIARY_NAME>)')
     print('D: delete (D <Path>)')
     print('O: load (O <Path>)')
+    print()
     print("E: edit (E -[Command] '[Content of input]')")
-    print('P: print (P -[Command] [Content of file])')
-    print('Q: quit (Q or q)')
+    print('E command ----> (usr, pwd, bio, add, del)')
+    print()
+    print('P: print (P -[Command])')
+    print('P command ----> (usr, pwd, bio, diary [ID], diaries)')
+    print()
     print('Note! Please Load a file or Create a file to Edit or Print content!')
+    print('Q: quit (Q or q)')
     print('-'*60)
 
 
-def command_file():
+def command_file(user) -> tuple[str, Notebook]:
     if user[0].upper() == 'C':
         path, notebook = command_parser.create1(user)
         return path, notebook
@@ -30,7 +37,7 @@ def command_file():
         path, notebook = command_parser.load1(user)
         return path, notebook
 
-def command_content():
+def command_content(user, path, notebook) -> None:
     if user[0].upper() == 'D':
         command_parser.delete1(user)
     elif user[0].upper() == 'E':
@@ -39,7 +46,7 @@ def command_content():
         command_parser.print1(notebook, user)
 
 
-if __name__ == "__main__":
+def main() -> None:
     command_lst_file = ['C', 'O']
     command_lst_content = ['D', 'E', 'P']
     menu()
@@ -56,12 +63,19 @@ if __name__ == "__main__":
             if user[0].upper() not in command_lst_file and user[0].upper() not in command_lst_content:
                 print('Invalid command!')
             elif user[0].upper() in command_lst_file:
-                    path, notebook = command_file()
+                    try:
+                        path, notebook = command_file(user)
+                    except:
+                        print("Invalid File!")
             elif user[0].upper() in command_lst_content:
                 try:
-                    command_content()
+                    command_content(user, path, notebook)
                 except NameError:
                     print('You did not load or create a file!')
-                except IndexError:
-                    print('Incomplete Command!')
+                except ValueError:
+                    print('Input an integer to print specific diary!')
         print('-'*60)
+
+
+if __name__ == "__main__":
+    main()
