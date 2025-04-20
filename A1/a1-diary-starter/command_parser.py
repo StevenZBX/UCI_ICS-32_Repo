@@ -92,7 +92,10 @@ def create1(user) -> tuple[str, Notebook]: # Command for creating a new notebook
     diary_name = user[-1]
     new_diary = dir / Path(diary_name + '.json')
     new_diary.touch() # Created file in the directory
-    path = f'{(user[1])}/{diary_name}.json' # Changed the directory to the user input
+    if "\\" in user[1]:
+        path = f'{(user[1])}\{diary_name}.json' # Changed the directory to the user input
+    elif "/" in user[1]:
+        path = f'{(user[1])}/{diary_name}.json'
     print(path, 'CREATED')
     new_notebook = Notebook(username, password, bio)
     new_notebook.save(path)
