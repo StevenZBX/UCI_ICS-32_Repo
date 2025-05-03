@@ -33,29 +33,50 @@ class TextUI:
                     faller_positions = faller.get_positions()
                 if (r, c) in faller_positions:
                     is_faller = True
-                    if faller.state == 'falling':
+                    if self.game_state.can_move_down():
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
-                                row.append(f'[{cell.color}-')
+                                color = faller.colors[0]
+                                row.append(f'[{color}-')
                             else:
-                                row.append(f'-{cell.color}]')
+                                color = faller.colors[1]
+                                row.append(f'-{color}]')
                         else:
-                            row.append(f'[{cell.color}]')
-                    else:
+                            if r == faller.row:
+                                color = faller.colors[0]
+                            else:
+                                color = faller.colors[1]
+                            row.append(f'[{color}]')
+                    else:  # landed
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
-                                row.append(f'|{cell.color}-')
+                                color = faller.colors[0]
+                                row.append(f'|{color}-')
                             else:
-                                row.append(f'-{cell.color}|')
+                                color = faller.colors[1]
+                                row.append(f'-{color}|')
                         else:
-                            row.append(f'|{cell.color}|')
+                            if r == faller.row:
+                                color = faller.colors[0]
+                            else:
+                                color = faller.colors[1]
+                            row.append(f'|{color}|')
                 else:
                     if cell.content == 'empty':
                         row.append('   ')
                     elif cell.content == 'virus':
-                        row.append(f' {cell.color} ')
+                        row.append(f' {cell.color.lower()} ')
                     elif cell.content == 'capsule':
-                        row.append(f' {cell.color} ')
+                        if cell.capsule_type == 'left':
+                            row.append(f' {cell.color}-')
+                        elif cell.capsule_type == 'right':
+                            row.append(f'-{cell.color} ')
+                        elif cell.capsule_type == 'top':
+                            row.append(f' {cell.color} ')
+                        elif cell.capsule_type == 'bottom':
+                            row.append(f' {cell.color} ')
+                        else:
+                            row.append(f' {cell.color} ')
             row.append('|')
             print(''.join(row))
         print(f' {"-" * (3 * self.game_state.cols)} ')

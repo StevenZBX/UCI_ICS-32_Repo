@@ -7,22 +7,21 @@
 # boxuanz3@uci.edu
 # 95535906
 
-
-import sys
+import shlex
 from logic import GameState
 from ui import TextUI
 
 def main():
     rows = int(input())
     cols = int(input())
-    next_line = sys.stdin.readline().strip()
+    next_line = input().strip()
     game_state = None
     if next_line == 'EMPTY':
         game_state = GameState(rows, cols)
     elif next_line == 'CONTENTS':
         contents = []
         for _ in range(rows):
-            line = sys.stdin.readline().strip('\n')
+            line = input().strip('\n')
             if len(line) < cols:
                 line += ' ' * (cols - len(line))
             contents.append(line[:cols])

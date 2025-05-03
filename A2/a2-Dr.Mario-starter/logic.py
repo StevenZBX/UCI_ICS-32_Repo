@@ -106,30 +106,48 @@ class GameState:
         if self.game_over:
             return
         if self.faller is not None:
-            if self.faller.state == 'falling':
-                if self.can_move_down():
-                    self.faller.row += 1
-                else:
-                    self.faller.state = 'landed'
-            elif self.faller.state == 'landed':
+            if self.can_move_down():
+                self.faller.row += 1
+                self.faller.state = 'falling'
+            else:
+                self.faller.state = 'landed'
                 self.freeze_faller()
                 self.handle_matches_and_gravity()
-                if self.faller is not None and self.faller.state == 'frozen':
-                    self.faller = None
         else:
             self.handle_matches_and_gravity()
 
     def can_move_down(self):
+        if self.faller is None:
+            return False
         positions = self.faller.get_positions_below()
         return self.positions_available(positions)
 
     def freeze_faller(self):
+        if self.faller is None:
+            return
         positions = self.faller.get_positions()
-        for (r, c) in positions:
-            cell = self.field.get_cell(r, c)
-            cell.content = 'capsule'
-            cell.color = self.faller.colors[0] if (r == self.faller.row and c == self.faller.col) else self.faller.colors[1]
-            cell.capsule_type = 'single'
+        if self.faller.orientation == 'horizontal':
+            left_pos = positions[0]
+            right_pos = positions[1]
+            left_cell = self.field.get_cell(left_pos[0], left_pos[1])
+            right_cell = self.field.get_cell(right_pos[0], right_pos[1])
+            left_cell.content = 'capsule'
+            right_cell.content = 'capsule'
+            left_cell.color = self.faller.colors[0]
+            right_cell.color = self.faller.colors[1]
+            left_cell.capsule_type = 'left'
+            right_cell.capsule_type = 'right'
+        else:
+            top_pos = positions[1]
+            bottom_pos = positions[0]
+            top_cell = self.field.get_cell(top_pos[0], top_pos[1])
+            bottom_cell = self.field.get_cell(bottom_pos[0], bottom_pos[1])
+            top_cell.content = 'capsule'
+            bottom_cell.content = 'capsule'
+            top_cell.color = self.faller.colors[1]
+            bottom_cell.color = self.faller.colors[0]
+            top_cell.capsule_type = 'top'
+            bottom_cell.capsule_type = 'bottom'
         self.faller = None
 
     def handle_matches_and_gravity(self):
@@ -199,12 +217,12 @@ class Field:
                 horizontal = set()
                 vertical = set()
                 for i in range(c, self.cols):
-                    if self.grid[r][i].color == color and self.grid[r][i].content in ['capsule', 'virus']:
+                    if self.grid[r][i].color is not None and self.grid[r][i].color.lower() == color.lower() and self.grid[r][i].content in ['capsule', 'virus']:
                         horizontal.add((r, i))
                     else:
                         break
                 for i in range(r, self.rows):
-                    if self.grid[i][c].color == color and self.grid[i][c].content in ['capsule', 'virus']:
+                    if self.grid[i][c].color is not None and self.grid[i][c].color.lower() == color.lower() and self.grid[i][c].content in ['capsule', 'virus']:
                         vertical.add((i, c))
                     else:
                         break
@@ -238,21 +256,29 @@ class Faller:
         if self.orientation == 'horizontal':
             new_orientation = 'vertical'
             new_colors = (self.colors[0], self.colors[1])
-            return Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller.state = self.state
+            return new_faller
         else:
             new_orientation = 'horizontal'
             new_colors = (self.colors[0], self.colors[1])
-            return Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller.state = self.state
+            return new_faller
 
     def rotate_counter_clockwise(self):
         if self.orientation == 'horizontal':
             new_orientation = 'vertical'
             new_colors = (self.colors[1], self.colors[0])
-            return Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller.state = self.state
+            return new_faller
         else:
             new_orientation = 'horizontal'
             new_colors = (self.colors[1], self.colors[0])
-            return Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
+            new_faller.state = self.state
+            return new_faller
 
     def wall_kick_left(self):
         self.col -= 1
