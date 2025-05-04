@@ -8,31 +8,31 @@ class GameState:
         self.level_cleared = False
 
     def create_faller(self, color1, color2):
+        """Create a new faller if possible."""
         if self.faller is not None:
             return
-        top_middle_cols = self.get_middle_cols(0)
-        for c in top_middle_cols:
-            cell = self.field.get_cell(0, c)
-            if cell.content == 'capsule':
-                self.game_over = True
-                return
+
+        # Get middle column for the second row
         middle_cols = self.get_middle_cols(1)
         positions = [(1, c) for c in middle_cols]
         if len(positions) == 1:
             positions = [(1, middle_cols[0]), (1, middle_cols[0]+1)]
-        available = all(self.field.get_cell(r, c).content == 'empty' for (r, c) in positions)
-        if available:
+
+        # Check if middle positions are available
+        if all(self.field.get_cell(r, c).content == 'empty' for (r, c) in positions):
             self.faller = Faller('horizontal', (color1, color2), 1, middle_cols[0])
+        else:
+            # If middle positions are not available, game over
+            self.game_over = True
 
     def get_middle_cols(self, row):
+        """Get the middle column(s) for a given row."""
         if self.cols % 2 == 1:
-            mid = self.cols // 2
-            return [mid]
-        else:
-            mid = self.cols // 2 - 1
-            return [mid, mid + 1]
+            return [self.cols // 2]
+        return [self.cols // 2 - 1, self.cols // 2]
 
     def process_command(self, command):
+        """Process a game command."""
         if command == 'A':
             self.rotate_clockwise()
         elif command == 'B':
@@ -45,13 +45,17 @@ class GameState:
             parts = command.split()
             if len(parts) < 4:
                 return
-            row = int(parts[1])
-            col = int(parts[2])
-            color = parts[3]
-            if 0 <= row < self.rows and 0 <= col < self.cols:
-                self.field.add_virus(row, col, color)
+            try:
+                row = int(parts[1])
+                col = int(parts[2])
+                color = parts[3]
+                if 0 <= row < self.rows and 0 <= col < self.cols:
+                    self.field.add_virus(row, col, color)
+            except (ValueError, IndexError):
+                pass
 
     def rotate_clockwise(self):
+        """Rotate the faller clockwise."""
         if self.faller is None or self.faller.state != 'falling':
             return
         new_faller = self.faller.rotate_clockwise()
@@ -63,6 +67,7 @@ class GameState:
                 self.faller = new_faller
 
     def rotate_counter_clockwise(self):
+        """Rotate the faller counter-clockwise."""
         if self.faller is None or self.faller.state != 'falling':
             return
         new_faller = self.faller.rotate_counter_clockwise()
@@ -74,15 +79,15 @@ class GameState:
                 self.faller = new_faller
 
     def positions_available(self, positions):
-        for (r, c) in positions:
-            if r < 0 or r >= self.rows or c < 0 or c >= self.cols:
-                return False
-            cell = self.field.get_cell(r, c)
-            if cell.content not in ['empty', 'faller']:
-                return False
-        return True
+        """Check if all positions are available."""
+        return all(
+            0 <= r < self.rows and 0 <= c < self.cols and
+            self.field.get_cell(r, c).content in ['empty', 'faller']
+            for (r, c) in positions
+        )
 
     def move_left(self):
+        """Move the faller left."""
         if self.faller is None or self.faller.state != 'falling':
             return
         new_col = self.faller.col - 1
@@ -93,6 +98,7 @@ class GameState:
             self.faller.col = new_col
 
     def move_right(self):
+        """Move the faller right."""
         if self.faller is None or self.faller.state != 'falling':
             return
         new_col = self.faller.col + 1
@@ -103,6 +109,7 @@ class GameState:
             self.faller.col = new_col
 
     def time_step(self):
+        """Advance the game by one time step."""
         if self.game_over:
             return
         if self.faller is not None:
@@ -117,40 +124,38 @@ class GameState:
             self.handle_matches_and_gravity()
 
     def can_move_down(self):
+        """Check if the faller can move down."""
         if self.faller is None:
             return False
         positions = self.faller.get_positions_below()
         return self.positions_available(positions)
 
     def freeze_faller(self):
+        """Freeze the faller in place."""
         if self.faller is None:
             return
         positions = self.faller.get_positions()
         if self.faller.orientation == 'horizontal':
-            left_pos = positions[0]
-            right_pos = positions[1]
-            left_cell = self.field.get_cell(left_pos[0], left_pos[1])
-            right_cell = self.field.get_cell(right_pos[0], right_pos[1])
-            left_cell.content = 'capsule'
-            right_cell.content = 'capsule'
-            left_cell.color = self.faller.colors[0]
-            right_cell.color = self.faller.colors[1]
-            left_cell.capsule_type = 'left'
-            right_cell.capsule_type = 'right'
+            left_pos, right_pos = positions
+            left_cell = self.field.get_cell(*left_pos)
+            right_cell = self.field.get_cell(*right_pos)
+            left_cell.content = right_cell.content = 'capsule'
+            left_cell.color, right_cell.color = self.faller.colors
+            left_cell.capsule_type, right_cell.capsule_type = 'left', 'right'
         else:
-            top_pos = positions[1]
-            bottom_pos = positions[0]
-            top_cell = self.field.get_cell(top_pos[0], top_pos[1])
-            bottom_cell = self.field.get_cell(bottom_pos[0], bottom_pos[1])
-            top_cell.content = 'capsule'
-            bottom_cell.content = 'capsule'
-            top_cell.color = self.faller.colors[1]
-            bottom_cell.color = self.faller.colors[0]
-            top_cell.capsule_type = 'top'
+            # For vertical orientation, positions[0] is bottom, positions[1] is top
+            bottom_pos, top_pos = positions
+            bottom_cell = self.field.get_cell(*bottom_pos)
+            top_cell = self.field.get_cell(*top_pos)
+            bottom_cell.content = top_cell.content = 'capsule'
+            bottom_cell.color = self.faller.colors[0]  # Bottom color
+            top_cell.color = self.faller.colors[1]  # Top color
             bottom_cell.capsule_type = 'bottom'
+            top_cell.capsule_type = 'top'
         self.faller = None
 
     def handle_matches_and_gravity(self):
+        """Handle matches and apply gravity."""
         changed = True
         while changed:
             changed = self.field.apply_gravity()
@@ -160,11 +165,12 @@ class GameState:
                 changed = True
 
     def has_viruses(self):
-        for r in range(self.rows):
-            for c in range(self.cols):
-                if self.field.get_cell(r, c).content == 'virus':
-                    return True
-        return False
+        """Check if there are any viruses remaining."""
+        return any(
+            self.field.get_cell(r, c).content == 'virus'
+            for r in range(self.rows)
+            for c in range(self.cols)
+        )
 
 class Field:
     def __init__(self, rows, cols, contents=None):
@@ -172,71 +178,137 @@ class Field:
         self.cols = cols
         self.grid = [[Cell() for _ in range(cols)] for _ in range(rows)]
         if contents is not None:
-            for r in range(rows):
-                line = contents[r]
-                for c in range(cols):
-                    char = line[c]
-                    if char == ' ':
-                        self.grid[r][c].content = 'empty'
-                    elif char.islower():
-                        self.grid[r][c].content = 'virus'
-                        self.grid[r][c].color = char
-                    else:
-                        self.grid[r][c].content = 'capsule'
-                        self.grid[r][c].color = char
-                        self.grid[r][c].capsule_type = 'single'
+            self.initialize_from_contents(contents)
+
+    def initialize_from_contents(self, contents):
+        """Initialize the field from contents."""
+        for r in range(self.rows):
+            line = contents[r]
+            for c in range(self.cols):
+                char = line[c]
+                cell = self.grid[r][c]
+                if char == ' ':
+                    cell.content = 'empty'
+                elif char.islower():
+                    cell.content = 'virus'
+                    cell.color = char
+                else:
+                    cell.content = 'capsule'
+                    cell.color = char
+                    cell.capsule_type = 'single'
 
     def get_cell(self, row, col):
+        """Get the cell at the specified position."""
         return self.grid[row][col]
 
     def add_virus(self, row, col, color):
+        """Add a virus at the specified position."""
         cell = self.grid[row][col]
         if cell.content == 'empty':
             cell.content = 'virus'
             cell.color = color
 
     def apply_gravity(self):
+        """Apply gravity to the field."""
         changed = False
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
                 cell = self.grid[r][c]
-                if cell.content == 'capsule' and cell.capsule_type == 'single':
-                    below = self.grid[r+1][c]
-                    if below.content == 'empty':
-                        self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
-                        changed = True
+                if cell.content == 'capsule':
+                    if cell.capsule_type == 'single':
+                        # Move single capsule down if possible
+                        if self.grid[r+1][c].content == 'empty':
+                            self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
+                            changed = True
+                    elif cell.capsule_type == 'bottom':
+                        # Move bottom part down if possible
+                        if r + 1 < self.rows and self.grid[r+1][c].content == 'empty':
+                            # Find the top part
+                            if r > 0 and self.grid[r-1][c].content == 'capsule' and self.grid[r-1][c].capsule_type == 'top':
+                                # Move both parts down
+                                self.grid[r+1][c] = cell  # Move bottom part down
+                                self.grid[r][c] = self.grid[r-1][c]  # Move top part down
+                                self.grid[r-1][c] = Cell()  # Clear old top position
+                                changed = True
+                            else:  # If no top part found, treat as single
+                                self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
+                                changed = True
+                    elif cell.capsule_type == 'top':
+                        # Check if both parts can move down
+                        if r + 1 < self.rows and self.grid[r+1][c].content == 'capsule' and self.grid[r+1][c].capsule_type == 'bottom':
+                            if r + 2 < self.rows and self.grid[r+2][c].content == 'empty':
+                                # Move both parts down
+                                self.grid[r+2][c] = self.grid[r+1][c]  # Move bottom part down
+                                self.grid[r+1][c] = cell  # Move top part down
+                                self.grid[r][c] = Cell()  # Clear old top position
+                                changed = True
         return changed
 
     def find_matches(self):
+        """Find all matches in the field."""
         matches = set()
+        # Horizontal
         for r in range(self.rows):
+            for c in range(self.cols - 3):
+                color = self.grid[r][c].color
+                if color is None or self.grid[r][c].content not in ['capsule', 'virus']:
+                    continue
+                if all(self.grid[r][c+i].color is not None and
+                       self.grid[r][c+i].color.lower() == color.lower() and
+                       self.grid[r][c+i].content in ['capsule', 'virus']
+                       for i in range(4)):
+                    matches.update((r, c+i) for i in range(4))
+        # Vertical
+        for r in range(self.rows - 3):
             for c in range(self.cols):
                 color = self.grid[r][c].color
-                if color is None:
+                if color is None or self.grid[r][c].content not in ['capsule', 'virus']:
                     continue
-                horizontal = set()
-                vertical = set()
-                for i in range(c, self.cols):
-                    if self.grid[r][i].color is not None and self.grid[r][i].color.lower() == color.lower() and self.grid[r][i].content in ['capsule', 'virus']:
-                        horizontal.add((r, i))
-                    else:
-                        break
-                for i in range(r, self.rows):
-                    if self.grid[i][c].color is not None and self.grid[i][c].color.lower() == color.lower() and self.grid[i][c].content in ['capsule', 'virus']:
-                        vertical.add((i, c))
-                    else:
-                        break
-                if len(horizontal) >= 4:
-                    matches.update(horizontal)
-                if len(vertical) >= 4:
-                    matches.update(vertical)
+                if all(self.grid[r+i][c].color is not None and
+                       self.grid[r+i][c].color.lower() == color.lower() and
+                       self.grid[r+i][c].content in ['capsule', 'virus']
+                       for i in range(4)):
+                    matches.update((r+i, c) for i in range(4))
         return matches
 
     def remove_matches(self, matches):
+        """Remove all matched cells and handle remaining capsule parts."""
         for (r, c) in matches:
-            self.grid[r][c].content = 'empty'
-            self.grid[r][c].color = None
-            self.grid[r][c].capsule_type = None
+            cell = self.grid[r][c]
+            if cell.content == 'capsule':
+                # Check if this is part of a horizontal capsule
+                if cell.capsule_type == 'left':
+                    # Check if right part is not matched
+                    if c + 1 < self.cols and (r, c + 1) not in matches:
+                        right_cell = self.grid[r][c + 1]
+                        if right_cell.capsule_type == 'right':
+                            # Convert right part to single capsule
+                            right_cell.capsule_type = 'single'
+                elif cell.capsule_type == 'right':
+                    # Check if left part is not matched
+                    if c - 1 >= 0 and (r, c - 1) not in matches:
+                        left_cell = self.grid[r][c - 1]
+                        if left_cell.capsule_type == 'left':
+                            # Convert left part to single capsule
+                            left_cell.capsule_type = 'single'
+                elif cell.capsule_type == 'top':
+                    # Check if bottom part is not matched
+                    if r + 1 < self.rows and (r + 1, c) not in matches:
+                        bottom_cell = self.grid[r + 1][c]
+                        if bottom_cell.capsule_type == 'bottom':
+                            # Convert bottom part to single capsule
+                            bottom_cell.capsule_type = 'single'
+                elif cell.capsule_type == 'bottom':
+                    # Check if top part is not matched
+                    if r - 1 >= 0 and (r - 1, c) not in matches:
+                        top_cell = self.grid[r - 1][c]
+                        if top_cell.capsule_type == 'top':
+                            # Convert top part to single capsule
+                            top_cell.capsule_type = 'single'
+            # Clear the matched cell
+            cell.content = 'empty'
+            cell.color = None
+            cell.capsule_type = None
 
 class Cell:
     def __init__(self):
@@ -253,48 +325,40 @@ class Faller:
         self.state = 'falling'
 
     def rotate_clockwise(self):
+        """Rotate the faller clockwise."""
         if self.orientation == 'horizontal':
-            new_orientation = 'vertical'
-            new_colors = (self.colors[0], self.colors[1])
-            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
-            new_faller.state = self.state
-            return new_faller
-        else:
-            new_orientation = 'horizontal'
-            new_colors = (self.colors[0], self.colors[1])
-            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
-            new_faller.state = self.state
-            return new_faller
+            return Faller('vertical', self.colors, self.row, self.col)
+        return Faller('horizontal', self.colors, self.row, self.col)
 
     def rotate_counter_clockwise(self):
+        """Rotate the faller counter clockwise."""
         if self.orientation == 'horizontal':
-            new_orientation = 'vertical'
-            new_colors = (self.colors[1], self.colors[0])
-            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
-            new_faller.state = self.state
-            return new_faller
-        else:
-            new_orientation = 'horizontal'
-            new_colors = (self.colors[1], self.colors[0])
-            new_faller = Faller(new_orientation, new_colors, self.row, self.col)
-            new_faller.state = self.state
-            return new_faller
+            return Faller('vertical', (self.colors[1], self.colors[0]), self.row, self.col)
+        return Faller('horizontal', (self.colors[1], self.colors[0]), self.row, self.col)
 
     def wall_kick_left(self):
+        """Perform a wall kick to the left."""
         self.col -= 1
 
     def get_positions(self):
+        """Get the positions occupied by the faller."""
         if self.orientation == 'horizontal':
             return [(self.row, self.col), (self.row, self.col + 1)]
-        else:
-            return [(self.row, self.col), (self.row - 1, self.col)]
+        # For vertical orientation, return positions in order: bottom, top
+        return [(self.row, self.col), (self.row - 1, self.col)]
 
     def get_positions_below(self):
+        """Get the positions below the faller."""
         positions = self.get_positions()
+        # For vertical orientation, only check the bottom position
+        if self.orientation == 'vertical':
+            return [(positions[0][0] + 1, positions[0][1])]
         return [(r + 1, c) for (r, c) in positions]
 
     def get_positions_at_col(self, new_col):
+        """Get the positions at a new column."""
         if self.orientation == 'horizontal':
             return [(self.row, new_col), (self.row, new_col + 1)]
-        else:
-            return [(self.row, new_col), (self.row - 1, new_col)]
+        # For vertical orientation, maintain the same order as get_positions
+        return [(self.row, new_col), (self.row - 1, new_col)]
+    

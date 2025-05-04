@@ -5,6 +5,7 @@ class TextUI:
         self.game_state = game_state
 
     def run(self):
+        """Run the game loop."""
         while True:
             self.display_field()
             if self.game_state.game_over:
@@ -13,27 +14,49 @@ class TextUI:
             if not self.game_state.has_viruses():
                 print("LEVEL CLEARED")
             try:
-                line = input()
-                command = line.strip()
-                if command == 'Q':
+                user = input().strip()
+                if user == 'Q':
                     break
-                self.process_command(command)
+                self.process_command(user)
             except EOFError:
                 break
 
+    def find_matches(self):
+        matches = set()
+        # Check horizontal matches
+        for r in range(self.game_state.rows):
+            for c in range(self.game_state.cols - 3):
+                color = self.game_state.field.get_cell(r, c).color
+                if color is None:
+                    continue
+                if all(self.game_state.field.get_cell(r, c+i).color and 
+                      self.game_state.field.get_cell(r, c+i).color.upper() == color.upper() 
+                      for i in range(4)):
+                    matches.update((r, c+i) for i in range(4))
+        # Check vertical matches
+        for r in range(self.game_state.rows - 3):
+            for c in range(self.game_state.cols):
+                color = self.game_state.field.get_cell(r, c).color
+                if color is None:
+                    continue
+                if all(self.game_state.field.get_cell(r+i, c).color and 
+                      self.game_state.field.get_cell(r+i, c).color.upper() == color.upper() 
+                      for i in range(4)):
+                    matches.update((r+i, c) for i in range(4))
+        return matches
+
     def display_field(self):
+        """Display the current game field."""
+        matches = self.game_state.field.find_matches()
         for r in range(self.game_state.rows):
             row = ['|']
             for c in range(self.game_state.cols):
                 cell = self.game_state.field.get_cell(r, c)
                 faller = self.game_state.faller
-                is_faller = False
-                faller_positions = []
-                if faller is not None:
-                    faller_positions = faller.get_positions()
+                faller_positions = faller.get_positions() if faller is not None else []
                 if (r, c) in faller_positions:
-                    is_faller = True
                     if self.game_state.can_move_down():
+                        # Falling state: use []
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -47,7 +70,7 @@ class TextUI:
                             else:
                                 color = faller.colors[1]
                             row.append(f'[{color}]')
-                    else:  # landed
+                    else:  # landed state: use ||
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -71,9 +94,7 @@ class TextUI:
                             row.append(f' {cell.color}-')
                         elif cell.capsule_type == 'right':
                             row.append(f'-{cell.color} ')
-                        elif cell.capsule_type == 'top':
-                            row.append(f' {cell.color} ')
-                        elif cell.capsule_type == 'bottom':
+                        elif cell.capsule_type in ['top', 'bottom']:
                             row.append(f' {cell.color} ')
                         else:
                             row.append(f' {cell.color} ')
@@ -81,31 +102,32 @@ class TextUI:
             print(''.join(row))
         print(f' {"-" * (3 * self.game_state.cols)} ')
 
-    def process_command(self, command_str):
-        parts = shlex.split(command_str)
-        if not parts:
+    def process_command(self, user):
+        """Process a user command."""
+        user_input = shlex.split(user)
+        if not user_input:
             self.game_state.time_step()
             return
-        cmd = parts[0]
-        if cmd == 'F':
-            if len(parts) != 3:
+        command = user_input[0]
+        if command == 'F':
+            if len(user_input) != 3:
                 return
-            color1, color2 = parts[1], parts[2]
+            color1, color2 = user_input[1], user_input[2]
             self.game_state.create_faller(color1, color2)
             top_middle = self.game_state.get_middle_cols(0)
             for c in top_middle:
                 cell = self.game_state.field.get_cell(0, c)
                 if cell.content == 'capsule':
                     self.game_state.game_over = True
-        elif cmd in ['A', 'B', '<', '>']:
-            self.game_state.process_command(cmd)
-        elif cmd == 'V':
-            if len(parts) < 4:
+        elif command in ['A', 'B', '<', '>']:
+            self.game_state.process_command(command)
+        elif command == 'V':
+            if len(user_input) < 4:
                 return
             try:
-                row = int(parts[1])
-                col = int(parts[2])
-                color = parts[3]
+                row = int(user_input[1])
+                col = int(user_input[2])
+                color = user_input[3]
                 self.game_state.field.add_virus(row, col, color)
-            except:
+            except (ValueError, IndexError):
                 pass

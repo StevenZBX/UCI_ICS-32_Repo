@@ -11,27 +11,38 @@ import shlex
 from logic import GameState
 from ui import TextUI
 
-def main():
-    rows = int(input())
-    cols = int(input())
-    next_line = input().strip()
-    game_state = None
-    if next_line == 'EMPTY':
-        game_state = GameState(rows, cols)
-    elif next_line == 'CONTENTS':
-        contents = []
-        for _ in range(rows):
-            line = input().strip('\n')
-            if len(line) < cols:
-                line += ' ' * (cols - len(line))
-            contents.append(line[:cols])
-        game_state = GameState(rows, cols, contents)
-    else:
-        print("Invalid input after rows and columns.")
-        return
+def get_game_state():
+    """Get game state from user input."""
+    try:
+        rows = int(input())
+        cols = int(input())
+        next_line = input().strip()
+        
+        if next_line == 'EMPTY':
+            return GameState(rows, cols)
+        elif next_line == 'CONTENTS':
+            contents = []
+            for _ in range(rows):
+                line = input().strip('\n')
+                if len(line) < cols:
+                    line += ' ' * (cols - len(line))
+                contents.append(line[:cols])
+            return GameState(rows, cols, contents)
+        else:
+            print("ERROR")
+            return None
+    except (ValueError, EOFError):
+        print("ERROR")
+        return None
 
+def main():
+    game_state = get_game_state()
+    if game_state is None:
+        return
+        
     ui = TextUI(game_state)
     ui.run()
 
 if __name__ == '__main__':
     main()
+    
