@@ -47,7 +47,7 @@ class TextUI:
 
     def display_field(self):
         """Display the current game field."""
-        matches = self.game_state.field.find_matches()
+        matches = self.game_state.current_matches
         for r in range(self.game_state.rows):
             row = ['|']
             for c in range(self.game_state.cols):
@@ -85,7 +85,11 @@ class TextUI:
                                 color = faller.colors[1]
                             row.append(f'|{color}|')
                 else:
-                    if cell.content == 'empty':
+                    if (r, c) in matches:
+                        # virus is lower case, capsule is upper case
+                        color = cell.color.lower() if cell.content == 'virus' else cell.color
+                        row.append(f'*{color}*')
+                    elif cell.content == 'empty':
                         row.append('   ')
                     elif cell.content == 'virus':
                         row.append(f' {cell.color.lower()} ')
@@ -100,7 +104,7 @@ class TextUI:
                             row.append(f' {cell.color} ')
             row.append('|')
             print(''.join(row))
-        print(f' {"-" * (3 * self.game_state.cols)} ')
+        print(f" {'-' * (3 * self.game_state.cols)} ")
 
     def process_command(self, user):
         """Process a user command."""
@@ -108,8 +112,7 @@ class TextUI:
         if not user_input:
             self.game_state.time_step()
             return
-        command = user_input[0]
-        if command == 'F':
+        if user_input[0] == 'F':
             if len(user_input) != 3:
                 return
             color1, color2 = user_input[1], user_input[2]
@@ -119,9 +122,9 @@ class TextUI:
                 cell = self.game_state.field.get_cell(0, c)
                 if cell.content == 'capsule':
                     self.game_state.game_over = True
-        elif command in ['A', 'B', '<', '>']:
-            self.game_state.process_command(command)
-        elif command == 'V':
+        elif user_input[0] in ['A', 'B', '<', '>']:
+            self.game_state.process_command(user_input[0])
+        elif user_input[0] == 'V':
             if len(user_input) < 4:
                 return
             try:

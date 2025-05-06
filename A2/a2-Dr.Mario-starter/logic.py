@@ -6,6 +6,7 @@ class GameState:
         self.faller = None
         self.game_over = False
         self.level_cleared = False
+        self.current_matches = set()  # 添加新属性来跟踪当前的匹配
 
     def create_faller(self, color1, color2):
         """Create a new faller if possible."""
@@ -156,13 +157,17 @@ class GameState:
 
     def handle_matches_and_gravity(self):
         """Handle matches and apply gravity."""
-        changed = True
-        while changed:
-            changed = self.field.apply_gravity()
-            matches = self.field.find_matches()
-            if matches:
-                self.field.remove_matches(matches)
-                changed = True
+        matches = self.field.find_matches()
+        if matches:
+            if not self.current_matches:  # if new matches
+                self.current_matches = matches  # save matches
+            else:
+                self.field.remove_matches(self.current_matches)  # remove previous
+                self.current_matches = set()  # remove the matches element
+                self.field.apply_gravity()  # apply gravity
+        else:
+            if not self.current_matches:  # if not matches
+                self.field.apply_gravity()  # only gravity
 
     def has_viruses(self):
         """Check if there are any viruses remaining."""
