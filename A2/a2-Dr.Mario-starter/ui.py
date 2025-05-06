@@ -1,3 +1,10 @@
+# The module for displaying the game field
+
+# Name Boxuan Zhang
+# Email boxuanz3@uci.edu
+# Student ID 95535906
+
+
 import shlex
 from logic import GameState
 
@@ -62,7 +69,7 @@ class TextUI:
                 faller_positions = faller.get_positions() if faller is not None else []
                 if (r, c) in faller_positions:
                     if self.game_state.can_move_down():
-                        # Falling state: use []
+                        # Falling state: use [color]
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -76,7 +83,7 @@ class TextUI:
                             else:
                                 color = faller.colors[1]
                             row.append(f'[{color}]')
-                    else:  # landed state: use ||
+                    else:  # landed state: use |color|
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -123,6 +130,10 @@ class TextUI:
             if len(user_input) != 3:
                 return
             color1, color2 = user_input[1], user_input[2]
+            valid_colors = ['R', 'B', 'Y']
+            if color1 not in valid_colors or color2 not in valid_colors:
+                print("ERROR")
+                return
             self.game_state.create_faller(color1, color2)
             top_middle = self.game_state.get_middle_cols(0)
             for c in top_middle:
@@ -135,9 +146,13 @@ class TextUI:
             if len(user_input) < 4:
                 return
             try:
-                row = int(user_input[1])
-                col = int(user_input[2])
-                color = user_input[3]
+                row: int = int(user_input[1])
+                col: int = int(user_input[2])
+                color: str = user_input[3]
+                valid_colors = ['R', 'B', 'Y']
+                if color not in valid_colors:
+                    print("ERROR")
+                    return
                 self.game_state.field.add_virus(row, col, color)
             except (ValueError, IndexError):
                 pass

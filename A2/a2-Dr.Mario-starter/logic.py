@@ -1,3 +1,10 @@
+# The module for the game logic
+
+# Name Boxuan Zhang
+# Email boxuanz3@uci.edu
+# Student ID 95535906
+
+
 class GameState:
     def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
         self.rows = rows
@@ -366,7 +373,7 @@ class Faller:
 
 
     def wall_kick_left(self) -> None:
-        """If the faller is close to the wall, move left automatically to conduct rotate"""
+        """If the faller is close to the wall, move left automatically to rotate"""
         self.col -= 1
 
 

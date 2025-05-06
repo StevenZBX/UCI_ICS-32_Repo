@@ -18,17 +18,17 @@ def get_game_state() -> GameState or None:
     try:
         rows: int = int(input())
         cols: int = int(input())
-        next_line: str = input().strip()
+        status: str = input().strip()
         
-        if next_line == 'EMPTY':    
+        if status == 'EMPTY':    
             return GameState(rows, cols)
-        elif next_line == 'CONTENTS':
+        elif status == 'CONTENTS':
             contents: list[str] = []
             for _ in range(rows):
-                line: str = input().strip('\n')
-                if len(line) < cols:
-                    line += ' ' * (cols - len(line))
-                contents.append(line[:cols])
+                content: str = input().strip('\n')
+                if len(content) < cols:
+                    content += ' ' * (cols - len(content))
+                contents.append(content[:cols])
             return GameState(rows, cols, contents)
         else:
             print("ERROR")
