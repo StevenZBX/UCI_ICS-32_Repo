@@ -32,6 +32,8 @@ def main() -> None:
     command_lst_file = ['C', 'O']
     command_lst_content = ['D', 'E', 'P']
     check = True
+    path = None
+    notebook = None
     while check:
         user = shlex.split(input())
         if user[0].upper() == 'Q':
