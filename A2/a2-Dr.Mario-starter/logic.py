@@ -1,5 +1,5 @@
 class GameState:
-    def __init__(self, rows, cols, contents=None) -> None:
+    def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
         self.rows = rows
         self.cols = cols
         self.field = Field(rows, cols, contents)
@@ -9,7 +9,7 @@ class GameState:
         self.current_matches = set()  # track current matches
 
 
-    def create_faller(self, color1, color2) -> None:
+    def create_faller(self, color1: str, color2: str) -> None:
         """Create a new faller if possible."""
         if self.faller is not None:
             return
@@ -28,14 +28,14 @@ class GameState:
             self.game_over = True
 
 
-    def get_middle_cols(self, row) -> list:
+    def get_middle_cols(self, row: int) -> list[int]:
         """Get the middle column(s) for a given row."""
         if self.cols % 2 == 1:
             return [self.cols // 2]
         return [self.cols // 2 - 1, self.cols // 2]
 
 
-    def command(self, command) -> None:
+    def command(self, command: str) -> None:
         """Process a game command."""
         if command == 'A':
             self.rotate_clockwise()
@@ -85,7 +85,7 @@ class GameState:
                 self.faller = new_faller
 
 
-    def positions_available(self, positions) -> bool:
+    def positions_available(self, positions: list[tuple[int, int]]) -> bool:
         """Check if all positions are available."""
         return all(
             0 <= r < self.rows and 0 <= c < self.cols and
@@ -191,7 +191,7 @@ class GameState:
 
 
 class Field:
-    def __init__(self, rows, cols, contents=None) -> None:
+    def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
         self.rows = rows
         self.cols = cols
         self.grid = [[Cell() for _ in range(cols)] for _ in range(rows)]
@@ -199,7 +199,7 @@ class Field:
             self.initialize_from_contents(contents)
 
 
-    def initialize_from_contents(self, contents) -> None:
+    def initialize_from_contents(self, contents: list[str]) -> None:
         """Initialize the field from contents."""
         for r in range(self.rows):
             line = contents[r]
@@ -217,12 +217,12 @@ class Field:
                     cell.capsule_type = 'single'
 
 
-    def get_cell(self, row, col) -> 'Cell':
+    def get_cell(self, row: int, col: int) -> 'Cell':
         """Get the cell at the specified position."""
         return self.grid[row][col]
 
 
-    def add_virus(self, row, col, color) -> None:
+    def add_virus(self, row: int, col: int, color: str) -> None:
         """Add a virus at the specified position."""
         cell = self.grid[row][col]
         if cell.content == 'empty':
@@ -267,7 +267,7 @@ class Field:
         return changed
 
 
-    def find_matches(self) -> set:
+    def find_matches(self) -> set[tuple[int, int]]:
         """Find all matches in the field."""
         matches = set()
         # Horizontal
@@ -295,7 +295,7 @@ class Field:
         return matches
 
 
-    def remove_matches(self, matches) -> None:
+    def remove_matches(self, matches: set[tuple[int, int]]) -> None:
         """Remove all matched cells and handle remaining capsule parts."""
         for (r, c) in matches:
             cell = self.grid[r][c]
@@ -343,7 +343,7 @@ class Cell:
 
 
 class Faller:
-    def __init__(self, orientation, colors, row, col) -> None:
+    def __init__(self, orientation: str, colors: tuple[str, str], row: int, col: int) -> None:
         self.orientation = orientation
         self.colors = colors
         self.row = row
@@ -370,7 +370,7 @@ class Faller:
         self.col -= 1
 
 
-    def get_positions(self) -> list:
+    def get_positions(self) -> list[tuple[int, int]]:
         """Get the positions occupied by the faller"""
         if self.orientation == 'horizontal':
             return [(self.row, self.col), (self.row, self.col + 1)]
@@ -378,7 +378,7 @@ class Faller:
         return [(self.row, self.col), (self.row - 1, self.col)]
 
 
-    def get_positions_below(self) -> list:
+    def get_positions_below(self) -> list[tuple[int, int]]:
         """Get the positions below the faller"""
         positions = self.get_positions()
         # For vertical orientation, only check the bottom position
@@ -387,7 +387,7 @@ class Faller:
         return [(r + 1, c) for (r, c) in positions]
 
 
-    def get_positions_at_col(self, new_col) -> list:
+    def get_positions_at_col(self, new_col: int) -> list[tuple[int, int]]:
         """Get the positions at a new column"""
         if self.orientation == 'horizontal':
             return [(self.row, new_col), (self.row, new_col + 1)]

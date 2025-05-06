@@ -13,19 +13,19 @@ from logic import GameState
 from ui import TextUI
 
 
-def get_game_state() -> 'GameState|None':
+def get_game_state() -> GameState or None:
     """Get game state from user input."""
     try:
-        rows = int(input())
-        cols = int(input())
-        next_line = input().strip()
+        rows: int = int(input())
+        cols: int = int(input())
+        next_line: str = input().strip()
         
-        if next_line == 'EMPTY':
+        if next_line == 'EMPTY':    
             return GameState(rows, cols)
         elif next_line == 'CONTENTS':
-            contents = []
+            contents: list[str] = []
             for _ in range(rows):
-                line = input().strip('\n')
+                line: str = input().strip('\n')
                 if len(line) < cols:
                     line += ' ' * (cols - len(line))
                 contents.append(line[:cols])
@@ -39,11 +39,11 @@ def get_game_state() -> 'GameState|None':
 
 
 def main() -> None:
-    game_state = get_game_state()
+    game_state: GameState | None = get_game_state()
     if game_state is None:
         return
         
-    ui = TextUI(game_state)
+    ui: TextUI = TextUI(game_state)
     ui.run()
 
 

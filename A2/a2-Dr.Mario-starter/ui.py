@@ -1,7 +1,9 @@
 import shlex
+from logic import GameState
+
 
 class TextUI:
-    def __init__(self, game_state) -> None:
+    def __init__(self, game_state: GameState) -> None:
         self.game_state = game_state
 
 
@@ -23,7 +25,7 @@ class TextUI:
                 break
 
 
-    def find_matches(self) -> set:
+    def find_matches(self) -> set[tuple[int, int]]:
         """Find matches capsules in the field"""
         matches = set()
         # Check horizontal matches
@@ -111,7 +113,7 @@ class TextUI:
         print(f" {'-' * (3 * self.game_state.cols)} ")
 
 
-    def process_command(self, user) -> None:
+    def process_command(self, user: str) -> None:
         """The function to process user command"""
         user_input = shlex.split(user)
         if not user_input:
