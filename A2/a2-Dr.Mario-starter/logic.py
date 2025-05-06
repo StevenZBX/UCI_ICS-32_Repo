@@ -4,9 +4,9 @@ class GameState:
         self.cols = cols
         self.field = Field(rows, cols, contents)
         self.faller = None
-        self.game_over = False
-        self.level_cleared = False
-        self.current_matches = set()  # 添加新属性来跟踪当前的匹配
+        self.game_over = False  # check the game status
+        self.level_cleared = False  # check whether there is any viruses
+        self.current_matches = set()  # track current matches
 
     def create_faller(self, color1, color2):
         """Create a new faller if possible."""
@@ -32,7 +32,7 @@ class GameState:
             return [self.cols // 2]
         return [self.cols // 2 - 1, self.cols // 2]
 
-    def process_command(self, command):
+    def command(self, command):
         """Process a game command."""
         if command == 'A':
             self.rotate_clockwise()
@@ -160,11 +160,10 @@ class GameState:
         matches = self.field.find_matches()
         if matches:
             if not self.current_matches:  # if new matches
-                self.current_matches = matches  # save matches
-            else:
+                self.current_matches = matches  # save
+            else:  # if show matches
                 self.field.remove_matches(self.current_matches)  # remove previous
                 self.current_matches = set()  # remove the matches element
-                self.field.apply_gravity()  # apply gravity
         else:
             if not self.current_matches:  # if not matches
                 self.field.apply_gravity()  # only gravity
@@ -342,18 +341,18 @@ class Faller:
         return Faller('horizontal', (self.colors[1], self.colors[0]), self.row, self.col)
 
     def wall_kick_left(self):
-        """Perform a wall kick to the left."""
+        """If the faller is close to the wall, move left automatically to conduct rotate"""
         self.col -= 1
 
     def get_positions(self):
-        """Get the positions occupied by the faller."""
+        """Get the positions occupied by the faller"""
         if self.orientation == 'horizontal':
             return [(self.row, self.col), (self.row, self.col + 1)]
         # For vertical orientation, return positions in order: bottom, top
         return [(self.row, self.col), (self.row - 1, self.col)]
 
     def get_positions_below(self):
-        """Get the positions below the faller."""
+        """Get the positions below the faller"""
         positions = self.get_positions()
         # For vertical orientation, only check the bottom position
         if self.orientation == 'vertical':
@@ -361,7 +360,7 @@ class Faller:
         return [(r + 1, c) for (r, c) in positions]
 
     def get_positions_at_col(self, new_col):
-        """Get the positions at a new column."""
+        """Get the positions at a new column"""
         if self.orientation == 'horizontal':
             return [(self.row, new_col), (self.row, new_col + 1)]
         # For vertical orientation, maintain the same order as get_positions

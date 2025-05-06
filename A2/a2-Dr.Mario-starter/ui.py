@@ -5,7 +5,7 @@ class TextUI:
         self.game_state = game_state
 
     def run(self):
-        """Run the game loop."""
+        """Game loop"""
         while True:
             self.display_field()
             if self.game_state.game_over:
@@ -22,6 +22,7 @@ class TextUI:
                 break
 
     def find_matches(self):
+        """Find matches capsules in the field"""
         matches = set()
         # Check horizontal matches
         for r in range(self.game_state.rows):
@@ -46,7 +47,7 @@ class TextUI:
         return matches
 
     def display_field(self):
-        """Display the current game field."""
+        """Display the current game field"""
         matches = self.game_state.current_matches
         for r in range(self.game_state.rows):
             row = ['|']
@@ -107,7 +108,7 @@ class TextUI:
         print(f" {'-' * (3 * self.game_state.cols)} ")
 
     def process_command(self, user):
-        """Process a user command."""
+        """The function to process user command"""
         user_input = shlex.split(user)
         if not user_input:
             self.game_state.time_step()
@@ -123,7 +124,7 @@ class TextUI:
                 if cell.content == 'capsule':
                     self.game_state.game_over = True
         elif user_input[0] in ['A', 'B', '<', '>']:
-            self.game_state.process_command(user_input[0])
+            self.game_state.command(user_input[0])
         elif user_input[0] == 'V':
             if len(user_input) < 4:
                 return

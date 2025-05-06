@@ -1,11 +1,12 @@
 # main module for the Dr.Mario Game
-# field module is the module for create field for the game
-# faller module is the module for the status of cells and player command
-# virus module is the module for creating virus for the game
+# The logical.py is the module for the game logic
+# The ui.py is the module for displaying the game field
 
-# Boxuan Zhang
-# boxuanz3@uci.edu
-# 95535906
+
+# Name Boxuan Zhang
+# Email boxuanz3@uci.edu
+# Student ID 95535906
+
 
 import shlex
 from logic import GameState
