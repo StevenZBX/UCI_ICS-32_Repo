@@ -1,10 +1,11 @@
 import shlex
 
 class TextUI:
-    def __init__(self, game_state):
+    def __init__(self, game_state) -> None:
         self.game_state = game_state
 
-    def run(self):
+
+    def run(self) -> None:
         """Game loop"""
         while True:
             self.display_field()
@@ -21,7 +22,8 @@ class TextUI:
             except EOFError:
                 break
 
-    def find_matches(self):
+
+    def find_matches(self) -> set:
         """Find matches capsules in the field"""
         matches = set()
         # Check horizontal matches
@@ -46,7 +48,8 @@ class TextUI:
                     matches.update((r+i, c) for i in range(4))
         return matches
 
-    def display_field(self):
+
+    def display_field(self) -> None:
         """Display the current game field"""
         matches = self.game_state.current_matches
         for r in range(self.game_state.rows):
@@ -107,7 +110,8 @@ class TextUI:
             print(''.join(row))
         print(f" {'-' * (3 * self.game_state.cols)} ")
 
-    def process_command(self, user):
+
+    def process_command(self, user) -> None:
         """The function to process user command"""
         user_input = shlex.split(user)
         if not user_input:

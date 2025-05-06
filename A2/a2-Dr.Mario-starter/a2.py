@@ -12,7 +12,8 @@ import shlex
 from logic import GameState
 from ui import TextUI
 
-def get_game_state():
+
+def get_game_state() -> 'GameState|None':
     """Get game state from user input."""
     try:
         rows = int(input())
@@ -36,13 +37,15 @@ def get_game_state():
         print("ERROR")
         return None
 
-def main():
+
+def main() -> None:
     game_state = get_game_state()
     if game_state is None:
         return
         
     ui = TextUI(game_state)
     ui.run()
+
 
 if __name__ == '__main__':
     main()
