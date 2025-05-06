@@ -8,7 +8,6 @@
 # Student ID 95535906
 
 
-import shlex
 from logic import GameState
 from ui import TextUI
 
@@ -19,7 +18,6 @@ def get_game_state() -> GameState or None:
         rows: int = int(input())
         cols: int = int(input())
         status: str = input().strip()
-        
         if status == 'EMPTY':    
             return GameState(rows, cols)
         elif status == 'CONTENTS':

@@ -358,18 +358,20 @@ class Faller:
         self.state = 'falling'
 
 
-    def rotate_clockwise(self) -> 'Faller':
+    def rotate_counter_clockwise(self) -> 'Faller':
         """Rotate the faller clockwise."""
         if self.orientation == 'horizontal':
-            return Faller('vertical', self.colors, self.row, self.col)
-        return Faller('horizontal', self.colors, self.row, self.col)
+            return Faller('vertical', (self.colors[0], self.colors[1]), self.row, self.col)
+        else:
+            return Faller('horizontal', (self.colors[1], self.colors[0]), self.row, self.col)
 
 
-    def rotate_counter_clockwise(self) -> 'Faller':
+    def rotate_clockwise(self) -> 'Faller':
         """Rotate the faller counter clockwise."""
         if self.orientation == 'horizontal':
             return Faller('vertical', (self.colors[1], self.colors[0]), self.row, self.col)
-        return Faller('horizontal', (self.colors[1], self.colors[0]), self.row, self.col)
+        else:
+            return Faller('horizontal', (self.colors[0], self.colors[1]), self.row, self.col)
 
 
     def wall_kick_left(self) -> None:
