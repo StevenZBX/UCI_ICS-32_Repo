@@ -9,9 +9,10 @@
 import shlex
 import command_parser
 from notebook import Notebook
+from pathlib import Path
 
 
-def command_file(user) -> tuple[str, Notebook]:
+def command_file(user: str) -> tuple[str, Notebook]:
     if user[0].upper() == 'C':
         path, notebook = command_parser.create1(user)
         return path, notebook
@@ -19,7 +20,7 @@ def command_file(user) -> tuple[str, Notebook]:
         path, notebook = command_parser.load1(user)
         return path, notebook
 
-def command_content(user, path, notebook) -> None:
+def command_content(user: str, path: Path, notebook: Notebook) -> None:
     if user[0].upper() == 'D':
         command_parser.delete1(user)
     elif user[0].upper() == 'E':

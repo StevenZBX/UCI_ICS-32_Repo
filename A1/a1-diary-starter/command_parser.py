@@ -13,7 +13,7 @@ from pathlib import Path
 import os
 
 
-def edit1(notebook, user, path) -> None: # Command for editing notebook obejct, when the command finished, the revision will save in the notebook
+def edit1(notebook: Notebook, user: str, path: Path) -> None: # Command for editing notebook obejct, when the command finished, the revision will save in the notebook
     edit_list = ['-usr', '-pwd', '-bio', '-add', '-del']
     user.remove('E')
     for index in range(0, len(user),2):
@@ -43,7 +43,7 @@ def edit1(notebook, user, path) -> None: # Command for editing notebook obejct, 
             print('ERROR')
 
 
-def print1(notebook, user) -> None: # Command for printing content of notebook obejct
+def print1(notebook: Notebook, user: str) -> None: # Command for printing content of notebook obejct
     try:
         print_list = ['-usr', '-pwd', '-bio', '-diaries', '-diary', '-all']
         user.remove('P')
@@ -83,7 +83,7 @@ def print1(notebook, user) -> None: # Command for printing content of notebook o
         print('ERROR')
 
 
-def create1(user) -> tuple[str, Notebook]: # Command for creating a new notebook obejct, when the notebook created, it will load automatically
+def create1(user: str) -> tuple[str, Notebook]: # Command for creating a new notebook obejct, when the notebook created, it will load automatically
     username = input()
     password = input()
     bio = input()
@@ -98,13 +98,13 @@ def create1(user) -> tuple[str, Notebook]: # Command for creating a new notebook
 
     return new_diary, new_notebook
 
-def delete1(user) -> None: # Command for deleting a file in the specifc path
+def delete1(user: str) -> None: # Command for deleting a file in the specifc path
     file_path = user[1]
     os.remove(file_path) # Deleted the correspond file
     print(f'{file_path} DELETED')
 
 
-def load1(user) -> tuple[str, Notebook]: # Command for loading a notebook in the path
+def load1(user: str) -> tuple[str, Notebook]: # Command for loading a notebook in the path
     path = user[1]
     notebook = Notebook('', '', '')
     notebook.load(path)
