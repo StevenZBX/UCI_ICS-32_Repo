@@ -27,11 +27,16 @@ class GameState:
         if len(positions) == 1:
             positions = [(1, middle_cols[0]), (1, middle_cols[0]+1)]
 
-        # Check if middle positions are available
         if all(self.field.get_cell(r, c).content == 'empty' for (r, c) in positions):
             self.faller = Faller('horizontal', (color1, color2), 1, middle_cols[0])
         else:
-            # If middle positions are not available, game over
+            # overlap the faller, then the game over
+            self.faller = Faller('horizontal', (color1, color2), 1, middle_cols[0])
+            for idx, (r, c) in enumerate(positions):
+                cell = self.field.get_cell(r, c)
+                cell.content = 'capsule'
+                cell.color = (color1, color2)[idx]
+                cell.capsule_type = 'left' if idx == 0 else 'right'
             self.game_over = True
 
 
@@ -174,18 +179,36 @@ class GameState:
         self.faller = None
 
 
+    def single_capsule_fall(self) -> None:
+        """if below is empty, let single fall with user input enter"""
+        for r in reversed(range(self.rows - 1)):
+            for c in range(self.cols):
+                cell = self.field.get_cell(r, c)
+                if cell.content == 'capsule' and cell.capsule_type == 'single':
+                    below = self.field.get_cell(r + 1, c)
+                    if below.content == 'empty':
+                        self.field.grid[r + 1][c], self.field.grid[r][c] = self.field.grid[r][c], self.field.grid[r + 1][c]
+
+
     def handle_matches_and_gravity(self) -> None:
-        """Handle matches and apply gravity."""
+        """
+        Handle all post-move game logic:
+        1. check single capsule and let them fall once
+        2. check whether there exists matches
+        3. if matches, use *color*
+        4. if *color*, remove all matches
+        """
+        self.single_capsule_fall()  # single capsule fall once
         matches = self.field.find_matches()
         if matches:
-            if not self.current_matches:  # if new matches
+            if not self.current_matches:  # if new
                 self.current_matches = matches  # save
-            else:  # if show matches
-                self.field.remove_matches(self.current_matches)  # remove previous
-                self.current_matches = set()  # remove the matches element
+            else:  # if old
+                self.field.remove_matches(self.current_matches)  # remove
+                self.current_matches = set()  # clear matches
         else:
-            if not self.current_matches:  # if not matches
-                self.field.apply_gravity()  # only gravity
+            if not self.current_matches:
+                pass
 
 
     def has_viruses(self) -> bool:

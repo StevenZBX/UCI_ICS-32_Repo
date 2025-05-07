@@ -16,6 +16,8 @@ class TextUI:
 
     def run(self) -> None:
         """Game loop"""
+        # check whether the cells in the field are matched
+        self.game_state.current_matches = self.find_matches()
         while True:
             self.display_field()
             if self.game_state.game_over:
@@ -154,5 +156,7 @@ class TextUI:
                     print("ERROR")
                     return
                 self.game_state.field.add_virus(row, col, color)
+                # add virus and check matches
+                self.game_state.current_matches = self.find_matches()
             except (ValueError, IndexError):
                 pass
