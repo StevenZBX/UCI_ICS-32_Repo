@@ -11,11 +11,18 @@ from logic import GameState
 
 class TextUI:
     def __init__(self, game_state: GameState) -> None:
+        """
+        Initialize the text with game state (True or False).
+        Prepares the game field for user to interact and display.
+        """
         self.game_state = game_state
 
 
     def run(self) -> None:
-        """Game loop"""
+        """
+        Main game loop for user.
+        Processing input, output, and updating the game status.
+        """
         # check whether the cells in the field are matched
         self.game_state.current_matches = self.find_matches()
         while True:
@@ -35,7 +42,10 @@ class TextUI:
 
 
     def find_matches(self) -> set[tuple[int, int]]:
-        """Find matches capsules in the field"""
+        """
+        Find all 4-in-a-row matches in the current field.
+        Returns a set of positions of mached elements.
+        """
         matches = set()
         # Check horizontal matches
         for r in range(self.game_state.rows):
@@ -61,7 +71,10 @@ class TextUI:
 
 
     def display_field(self) -> None:
-        """Display the current game field"""
+        """
+        Print the current game field
+        Display the capsule and virus in the field
+        """
         matches = self.game_state.current_matches
         for r in range(self.game_state.rows):
             row = ['|']
@@ -123,7 +136,10 @@ class TextUI:
 
 
     def process_command(self, user: str) -> None:
-        """The function to process user command"""
+        """
+        Process a user command string.
+        Conducting faller creation, movement, rotation, and virus addition.
+        """
         user_input = shlex.split(user)
         if not user_input:
             self.game_state.time_step()

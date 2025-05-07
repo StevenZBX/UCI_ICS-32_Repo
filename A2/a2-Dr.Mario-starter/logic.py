@@ -7,6 +7,10 @@
 
 class GameState:
     def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
+        """
+        Initialize the game state with the given field size and optional contents.
+        Sets up the field, faller, and game status flags.
+        """
         self.rows = rows
         self.cols = cols
         self.field = Field(rows, cols, contents)
@@ -17,7 +21,10 @@ class GameState:
 
 
     def create_faller(self, color1: str, color2: str) -> None:
-        """Create a new faller if possible."""
+        """
+        Attempt to create a new faller in the center of the second row.
+        If the position is blocked, force place and set game over.
+        """
         if self.faller is not None:
             return
 
@@ -41,14 +48,20 @@ class GameState:
 
 
     def get_middle_cols(self, row: int) -> list[int]:
-        """Get the middle column(s) for a given row."""
+        """
+        Return the middle column(s) for a given row.
+        Used for capsule spawning logic.
+        """
         if self.cols % 2 == 1:
             return [self.cols // 2]
         return [self.cols // 2 - 1, self.cols // 2]
 
 
     def command(self, command: str) -> None:
-        """Process a game command."""
+        """
+        Process a single game command (rotate, move, add virus, etc).
+        Delegates to the appropriate game logic method.
+        """
         if command == 'A':
             self.rotate_clockwise()
         elif command == 'B':
@@ -72,7 +85,10 @@ class GameState:
 
 
     def rotate_clockwise(self) -> None:
-        """Rotate the faller clockwise."""
+        """
+        Rotate the current faller clockwise if possible.
+        Handles wall kicks if needed.
+        """
         if self.faller is None or self.faller.state != 'falling':
             return
         new_faller = self.faller.rotate_clockwise()
@@ -85,7 +101,10 @@ class GameState:
 
 
     def rotate_counter_clockwise(self) -> None:
-        """Rotate the faller counter-clockwise."""
+        """
+        Rotate the current faller counter-clockwise if possible.
+        Handles wall kicks if needed.
+        """
         if self.faller is None or self.faller.state != 'falling':
             return
         new_faller = self.faller.rotate_counter_clockwise()
@@ -98,7 +117,10 @@ class GameState:
 
 
     def positions_available(self, positions: list[tuple[int, int]]) -> bool:
-        """Check if all positions are available."""
+        """
+        Check if all given positions are available for movement.
+        Used for collision and boundary checks.
+        """
         return all(
             0 <= r < self.rows and 0 <= c < self.cols and
             self.field.get_cell(r, c).content in ['empty', 'faller']
@@ -107,7 +129,10 @@ class GameState:
 
 
     def move_left(self) -> None:
-        """Move the faller left."""
+        """
+        Move the faller one column to the left if possible.
+        Only works if the faller is currently falling.
+        """
         if self.faller is None or self.faller.state != 'falling':
             return
         new_col = self.faller.col - 1
@@ -119,7 +144,10 @@ class GameState:
 
 
     def move_right(self) -> None:
-        """Move the faller right."""
+        """
+        Move the faller one column to the right if possible.
+        Only works if the faller is currently falling.
+        """
         if self.faller is None or self.faller.state != 'falling':
             return
         new_col = self.faller.col + 1
@@ -131,7 +159,10 @@ class GameState:
 
 
     def time_step(self) -> None:
-        """Advance the game by one time step."""
+        """
+        Advance the game by one time step (gravity or landing).
+        Handles faller movement and match/gravity logic.
+        """
         if self.game_over:
             return
         if self.faller is not None:
@@ -147,7 +178,10 @@ class GameState:
 
 
     def can_move_down(self) -> bool:
-        """Check if the faller can move down."""
+        """
+        Check if the current faller can move down by one row.
+        Used to determine if the faller should land.
+        """
         if self.faller is None:
             return False
         positions = self.faller.get_positions_below()
@@ -155,7 +189,10 @@ class GameState:
 
 
     def freeze_faller(self) -> None:
-        """Freeze the faller in place."""
+        """
+        Convert the current faller into fixed capsules in the field.
+        Sets the appropriate capsule types and clears the faller.
+        """
         if self.faller is None:
             return
         positions = self.faller.get_positions()
@@ -180,7 +217,10 @@ class GameState:
 
 
     def single_capsule_fall(self) -> None:
-        """if below is empty, let single fall with user input enter"""
+        """
+        Let all single (independent) capsules fall one row if possible.
+        Only applies to capsules not connected to others.
+        """
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
                 cell = self.field.get_cell(r, c)
@@ -212,7 +252,10 @@ class GameState:
 
 
     def has_viruses(self) -> bool:
-        """Check if there are any viruses remaining."""
+        """
+        Return True if there are any viruses left in the field.
+        Used to determine if the level is cleared.
+        """
         return any(
             self.field.get_cell(r, c).content == 'virus'
             for r in range(self.rows)
@@ -222,6 +265,10 @@ class GameState:
 
 class Field:
     def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
+        """
+        Initialize the field grid with the given size and optional contents.
+        Each cell is set up as empty, virus, or capsule.
+        """
         self.rows = rows
         self.cols = cols
         self.grid = [[Cell() for _ in range(cols)] for _ in range(rows)]
@@ -230,7 +277,10 @@ class Field:
 
 
     def initialize_from_contents(self, contents: list[str]) -> None:
-        """Initialize the field from contents."""
+        """
+        Fill the field grid from a list of string contents.
+        Used for loading custom or test scenarios.
+        """
         for r in range(self.rows):
             line = contents[r]
             for c in range(self.cols):
@@ -248,12 +298,18 @@ class Field:
 
 
     def get_cell(self, row: int, col: int) -> 'Cell':
-        """Get the cell at the specified position."""
+        """
+        Return the Cell object at the specified row and column.
+        Used for all field access and manipulation.
+        """
         return self.grid[row][col]
 
 
     def add_virus(self, row: int, col: int, color: str) -> None:
-        """Add a virus at the specified position."""
+        """
+        Add a virus of the given color at the specified position.
+        Only works if the cell is currently empty.
+        """
         cell = self.grid[row][col]
         if cell.content == 'empty':
             cell.content = 'virus'
@@ -261,7 +317,10 @@ class Field:
 
 
     def apply_gravity(self) -> bool:
-        """Apply gravity to the field."""
+        """
+        Apply gravity to all capsules in the field.
+        Moves capsules down if there is empty space below.
+        """
         changed = False
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
@@ -298,7 +357,10 @@ class Field:
 
 
     def find_matches(self) -> set[tuple[int, int]]:
-        """Find all matches in the field."""
+        """
+        Find all 4-in-a-row matches (horizontal or vertical).
+        Returns a set of matched cell positions.
+        """
         matches = set()
         # Horizontal
         for r in range(self.rows):
@@ -326,7 +388,10 @@ class Field:
 
 
     def remove_matches(self, matches: set[tuple[int, int]]) -> None:
-        """Remove all matched cells and handle remaining capsule parts."""
+        """
+        Remove all matched cells from the field and update capsule types.
+        Handles splitting capsules and clearing matched cells.
+        """
         for (r, c) in matches:
             cell = self.grid[r][c]
             if cell.content == 'capsule':
@@ -367,6 +432,10 @@ class Field:
 
 class Cell:
     def __init__(self) -> None:
+        """
+        Initialize a cell as empty with no color or capsule type.
+        Used for all field grid positions.
+        """
         self.content = 'empty'
         self.color = None
         self.capsule_type = None
@@ -374,6 +443,10 @@ class Cell:
 
 class Faller:
     def __init__(self, orientation: str, colors: tuple[str, str], row: int, col: int) -> None:
+        """
+        Initialize a new faller with orientation, colors, and position.
+        Used for falling capsule logic.
+        """
         self.orientation = orientation
         self.colors = colors
         self.row = row
@@ -382,7 +455,10 @@ class Faller:
 
 
     def rotate_counter_clockwise(self) -> 'Faller':
-        """Rotate the faller clockwise."""
+        """
+        Return a new Faller rotated counter-clockwise from the current orientation.
+        Adjusts color order as needed.
+        """
         if self.orientation == 'horizontal':
             return Faller('vertical', (self.colors[0], self.colors[1]), self.row, self.col)
         else:
@@ -390,7 +466,10 @@ class Faller:
 
 
     def rotate_clockwise(self) -> 'Faller':
-        """Rotate the faller counter clockwise."""
+        """
+        Return a new Faller rotated clockwise from the current orientation.
+        Adjusts color order as needed.
+        """
         if self.orientation == 'horizontal':
             return Faller('vertical', (self.colors[1], self.colors[0]), self.row, self.col)
         else:
@@ -398,12 +477,18 @@ class Faller:
 
 
     def wall_kick_left(self) -> None:
-        """If the faller is close to the wall, move left automatically to rotate"""
+        """
+        Move the faller one column to the left for wall kick during rotation.
+        Used to allow rotation near field edges.
+        """
         self.col -= 1
 
 
     def get_positions(self) -> list[tuple[int, int]]:
-        """Get the positions occupied by the faller"""
+        """
+        Return a list of positions occupied by the faller.
+        Depends on orientation and current position.
+        """
         if self.orientation == 'horizontal':
             return [(self.row, self.col), (self.row, self.col + 1)]
         # For vertical orientation, return positions in order: bottom, top
@@ -411,7 +496,10 @@ class Faller:
 
 
     def get_positions_below(self) -> list[tuple[int, int]]:
-        """Get the positions below the faller"""
+        """
+        Return a list of positions directly below the faller.
+        Used to check if the faller can move down.
+        """
         positions = self.get_positions()
         # For vertical orientation, only check the bottom position
         if self.orientation == 'vertical':
@@ -420,7 +508,10 @@ class Faller:
 
 
     def get_positions_at_col(self, new_col: int) -> list[tuple[int, int]]:
-        """Get the positions at a new column"""
+        """
+        Return a list of positions the faller would occupy at a new column.
+        Used for left/right movement and wall kicks.
+        """
         if self.orientation == 'horizontal':
             return [(self.row, new_col), (self.row, new_col + 1)]
         # For vertical orientation, maintain the same order as get_positions
