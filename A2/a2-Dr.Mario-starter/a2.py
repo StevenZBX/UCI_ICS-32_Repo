@@ -1,4 +1,4 @@
-# main module for the Dr.Mario Game
+# Main module for the Dr.Mario Game
 # The logical.py is the module for the game logic
 # The ui.py is the module for displaying the game field
 

@@ -174,6 +174,33 @@ class GameState:
                 self.freeze_faller()
                 self.handle_matches_and_gravity()
         else:
+            # Check if any capsule can fall
+            gravity_needed = False
+            for r in range(self.rows - 1):
+                for c in range(self.cols):
+                    cell = self.field.get_cell(r, c)
+                    if cell.content == 'capsule':
+                        # Check single capsule
+                        if cell.capsule_type == 'single':
+                            if self.field.get_cell(r + 1, c).content == 'empty':
+                                gravity_needed = True
+                        # Check vertical capsule
+                        elif cell.capsule_type == 'bottom':
+                            if r > 0:
+                                top_cell = self.field.get_cell(r - 1, c)
+                                if (top_cell.content == 'capsule' and top_cell.capsule_type == 'top' and
+                                    self.field.get_cell(r + 1, c).content == 'empty'):
+                                    gravity_needed = True
+                        # Check horizontal capsule
+                        elif cell.capsule_type == 'left' and c < self.cols - 1:
+                            right_cell = self.field.get_cell(r, c + 1)
+                            if (right_cell.content == 'capsule' and right_cell.capsule_type == 'right' and
+                                self.field.get_cell(r + 1, c).content == 'empty' and 
+                                self.field.get_cell(r + 1, c + 1).content == 'empty'):
+                                gravity_needed = True
+            
+            if gravity_needed:
+                self.field.apply_gravity()
             self.handle_matches_and_gravity()
 
 
@@ -209,10 +236,11 @@ class GameState:
             bottom_cell = self.field.get_cell(*bottom_pos)
             top_cell = self.field.get_cell(*top_pos)
             bottom_cell.content = top_cell.content = 'capsule'
-            bottom_cell.color = self.faller.colors[0]  # Bottom color
-            top_cell.color = self.faller.colors[1]  # Top color
-            bottom_cell.capsule_type = 'bottom'
-            top_cell.capsule_type = 'top'
+            bottom_cell.color = self.faller.colors[0]  # bottom color
+            top_cell.color = self.faller.colors[1]  # top color
+            # Make both capsules independent
+            bottom_cell.capsule_type = 'single'
+            top_cell.capsule_type = 'single'
         self.faller = None
 
 
@@ -237,8 +265,8 @@ class GameState:
         2. check whether there exists matches
         3. if matches, use *color*
         4. if *color*, remove all matches
+        5. if any whole capsule (left/right or top/bottom) can fall, apply gravity
         """
-        self.single_capsule_fall()  # single capsule fall once
         matches = self.field.find_matches()
         if matches:
             if not self.current_matches:  # if new
@@ -318,41 +346,31 @@ class Field:
 
     def apply_gravity(self) -> bool:
         """
-        Apply gravity to all capsules in the field.
-        Moves capsules down if there is empty space below.
+        Apply gravity to the field.
+        Check horizontal and single capsules.
         """
         changed = False
+        # horizontal cell
+        for r in reversed(range(self.rows - 1)):
+            for c in range(self.cols - 1):
+                cell = self.grid[r][c]
+                if cell.content == 'capsule' and cell.capsule_type == 'left':
+                    right_cell = self.grid[r][c+1]
+                    if (right_cell.content == 'capsule' and right_cell.capsule_type == 'right' and
+                        self.grid[r+1][c].content == 'empty' and self.grid[r+1][c+1].content == 'empty'):
+                        self.grid[r+1][c] = cell
+                        self.grid[r+1][c+1] = right_cell
+                        self.grid[r][c] = Cell()
+                        self.grid[r][c+1] = Cell()
+                        changed = True
+        # single cell
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
                 cell = self.grid[r][c]
-                if cell.content == 'capsule':
-                    if cell.capsule_type == 'single':
-                        # Move single capsule down if possible
-                        if self.grid[r+1][c].content == 'empty':
-                            self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
-                            changed = True
-                    elif cell.capsule_type == 'bottom':
-                        # Move bottom part down if possible
-                        if r + 1 < self.rows and self.grid[r+1][c].content == 'empty':
-                            # Find the top part
-                            if r > 0 and self.grid[r-1][c].content == 'capsule' and self.grid[r-1][c].capsule_type == 'top':
-                                # Move both parts down
-                                self.grid[r+1][c] = cell  # Move bottom part down
-                                self.grid[r][c] = self.grid[r-1][c]  # Move top part down
-                                self.grid[r-1][c] = Cell()  # Clear old top position
-                                changed = True
-                            else:  # If no top part found, treat as single
-                                self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
-                                changed = True
-                    elif cell.capsule_type == 'top':
-                        # Check if both parts can move down
-                        if r + 1 < self.rows and self.grid[r+1][c].content == 'capsule' and self.grid[r+1][c].capsule_type == 'bottom':
-                            if r + 2 < self.rows and self.grid[r+2][c].content == 'empty':
-                                # Move both parts down
-                                self.grid[r+2][c] = self.grid[r+1][c]  # Move bottom part down
-                                self.grid[r+1][c] = cell  # Move top part down
-                                self.grid[r][c] = Cell()  # Clear old top position
-                                changed = True
+                if cell.content == 'capsule' and cell.capsule_type == 'single':
+                    if self.grid[r+1][c].content == 'empty':
+                        self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
+                        changed = True
         return changed
 
 
