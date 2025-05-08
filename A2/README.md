@@ -1,8 +1,125 @@
-This assignment is part of a two-part assignment in which you will build a video game. In this assignment, you will implement the model of the game. We want you to implement the fundamental logic in the game and build a text-based user interface that allows a user to play the game, albeit in a rather cumbersome fashion. In a future assignment, we will build a user-friendly GUI.
+# Dr. Mario Game Implementation
 
+## Overview
+This is part one of a two-part assignment where you'll build a video game. In this part, you'll implement the game's core logic and a text-based interface. The GUI version will be built in a future assignment.
 
-What is Dr. Mario?
-Dr. Mario is a falling block puzzle game (think Tetris) that was released in 1990 for the Nintendo Entertainment System (and the Gameboy, but since we want to think of the matching in terms of color, let’s only focus on the NES version). If you don’t know of the original puzzle game featuring Dr. Mario, you may know the character from the Super Smash Bros. series. The objective of the game (or a single level rather), is to remove a group of viruses occupying a grid using colorful vitamin capsules. Here you can watch a bit of the gameplay:
+## Game Description
+Dr. Mario is a puzzle game similar to Tetris, originally released in 1990 for the Nintendo Entertainment System. The goal is to clear viruses from a grid using colorful vitamin capsules.
+
+## Game Components
+
+### 1. Field
+- A grid where the game takes place
+- Each cell can contain:
+  - Part of a vitamin capsule
+  - A virus
+  - Empty space
+
+### 2. Vitamin Capsules
+- Made of two connected segments
+- Each segment has a color (Red, Yellow, or Blue)
+- Can be:
+  - Two different colors
+  - Same color
+  - Horizontal or vertical orientation
+
+### 3. Viruses
+- Single-celled elements
+- Come in three colors: red, yellow, or blue
+
+### 4. Faller
+- The current vitamin capsule moving down the field
+- Lands when it hits:
+  - An occupied cell
+  - The bottom of the field
+- Can be:
+  - Rotated (clockwise or counterclockwise)
+  - Moved left or right
+  - Frozen when landed
+
+## Game Rules
+
+### Rotation
+- Fallers can rotate clockwise (A) or counterclockwise (B)
+- Rotation happens around the bottom-left cell
+- Wall kicks occur when rotation is blocked:
+  - If blocked, faller moves left
+  - If left move is impossible, rotation fails
+
+### Matching
+- Matches occur when 4+ adjacent cells have the same color
+- Matches can be horizontal or vertical
+- Matched cells (viruses and capsules) disappear
+
+### Gravity
+- Affects capsule pieces, not viruses
+- Makes pieces fall when there's empty space below
+- Applies to:
+  - Single capsule pieces
+  - Horizontal capsules with empty space below both ends
+  - Vertical capsules with empty space below bottom segment
+
+### Level Completion
+- A level is complete when all viruses are removed
+- Game continues after level completion
+
+## Game Setup
+
+### Field Size
+1. Enter number of rows (minimum 4)
+2. Enter number of columns (minimum 3)
+
+### Initial Field State
+Two options:
+1. Empty field: Enter "EMPTY"
+2. Custom field: Enter "CONTENTS" followed by field configuration
+   - Use uppercase letters (R,B,Y) for capsule segments
+   - Use lowercase letters (r,b,y) for viruses
+   - Use spaces for empty cells
+
+## Game Commands
+
+### Basic Commands
+- `ENTER` (blank line): Advance time
+- `F [color1] [color2]`: Create new faller
+- `A`: Rotate clockwise
+- `B`: Rotate counterclockwise
+- `<`: Move left
+- `>`: Move right
+- `V [row] [col] [color]`: Create virus
+- `Q`: Quit game
+
+### Game End Conditions
+1. Player quits (Q command)
+2. Game over when new faller can't be created (top row blocked)
+
+## Implementation Requirements
+
+### File Structure
+- `a2.py`: Main program entry point
+- At least two modules:
+  - User interface module
+  - Game logic module
+- At least one class for game state
+
+### Required Methods
+- Get field dimensions
+- Create faller
+- Rotate faller
+- Check for viruses
+- (Additional methods as needed)
+
+## Field Display Format
+Each cell is represented by 3 characters:
+- Empty: `   ` (three spaces)
+- Single capsule: ` R ` (space, letter, space)
+- Left capsule end: ` R-` (space, letter, dash)
+- Right capsule end: `-R ` (dash, letter, space)
+- Vertical faller: `[R]`
+- Horizontal faller left: `[R-`
+- Horizontal faller right: `-R]`
+- Virus: ` r ` (space, lowercase letter, space)
+- Matched cell: `*R*` or `*r*`
 
 
 Additionally, here is the official game manualLinks to an external site. for Dr. Mario as it was included with the game cartridge. You may find this document useful (or interesting).
@@ -77,13 +194,13 @@ Your program needs to take in a specific configuration of the field to begin the
 
 If we want to start with an empty field, the word EMPTY should be entered alone on the next input line.
 
-If we want to start our game with a specific field configuration, the word CONTENTS should be entered alone on the next input line. After that, assuming we have entered r rows and c columns, there should be r additional lines of input expected, and each line should contain exactly c characters; these characters represent the contents of each of the field’s cells at the outset of our game.
+If we want to start our game with a specific field configuration, the word CONTENTS should be entered alone on the next input line. After that, assuming we have entered r rows and c columns, there should be r additional lines of input expected, and each line should contain exactly c characters; these characters represent the contents of each of the field's cells at the outset of our game.
 
 For a cell with a virus, a lowercase letter should be used (r,y,b).
 For a cell with a portion of a vitamin capsule, an uppercase letter should be used (R, B, Y)
 A space should be used for an empty cell.
 Note that every cell should be represented in this input. Every empty cell should be represented by its own space character.
-Notably, we defined a vitamin capsule above as being made up of “two connecting segments.” Though I have not yet gone into detail about how we will represent each cell in our grid, you may be wondering how we would capture the connection between two cells as they may be part of the same vitamin capsule. For simplicity, you can assume that any cell in the initial configuration supplied this way is just a portion of a vitamin capsule. These kinds of cells are possible, as you may have noticed in the gameplay video and would normally come about as a result of matching (as described in more detail below)
+Notably, we defined a vitamin capsule above as being made up of "two connecting segments." Though I have not yet gone into detail about how we will represent each cell in our grid, you may be wondering how we would capture the connection between two cells as they may be part of the same vitamin capsule. For simplicity, you can assume that any cell in the initial configuration supplied this way is just a portion of a vitamin capsule. These kinds of cells are possible, as you may have noticed in the gameplay video and would normally come about as a result of matching (as described in more detail below)
 Playing the Game
 At this point, the game can begin. Now, we will continuously display the field and then ask for a command from the user.
 
@@ -111,7 +228,7 @@ Your program should be able to read the following commands:
 A blank line (entered simply by pressing the ENTER key). This command represents the passage of time in our game. (In the next assignment, this update would occur simply as a result of a timed event rather than any user input).
 If there is a faller currently on the field, it falls down one cell. If there is a faller that has currently landed, it freezes. If there are capsule cells with empty cells below them, then gravity should be applied one cell at a time and the capsule cells should move downward.
 F, followed by two uppercase letters (R, B, or Y) each separated by whitespace (any amount of whitespace is acceptable, consider using shlex as in assignment 1). This command will create a faller with the first uppercase letter after F representing the left end of a horizontal faller and the second letter after F representing the right end of a horizontal faller. F R Y, would create a faller with a red left segment, and a yellow right segment.
-All fallers should be created horizontally with their left end occupying the middle cell of the second row of our field. You may be wondering: why the second row? Well, it is probably not visible in the gameplay above, but the top cell of the field in the original game is actually not blocked by any sort of barrier. That is, a vitamin capsule can overlap the glass covering the top of the field. Whether or not this is an error in the original game’s code, I am not sure. But it does make some of the game logic a bit simpler to grapple with. I attached an image of the effect below if you're interested.
+All fallers should be created horizontally with their left end occupying the middle cell of the second row of our field. You may be wondering: why the second row? Well, it is probably not visible in the gameplay above, but the top cell of the field in the original game is actually not blocked by any sort of barrier. That is, a vitamin capsule can overlap the glass covering the top of the field. Whether or not this is an error in the original game's code, I am not sure. But it does make some of the game logic a bit simpler to grapple with. I attached an image of the effect below if you're interested.
 If c (the number of columns) is odd, there will be one middle cell, located at the column numbered 
  (in a 0-based index system as we use in Python). If c is even, there will be two middle cells, occupying the columns 
  and 
@@ -127,10 +244,10 @@ There are 2 ways for the program to end:
 
 If the user inputs the Q command. No additional output should be printed.
 If a faller is created while the middle cell(s) of the top row are occupied by capsule segments. In this case, the player has lost, the game should end, and your program should print GAME OVER before terminating.
-Notably, in our program, since we allow you to begin with an empty field, a cleared level is not a terminating condition. In the next assignment, you will have freedom over how you want to allow the user to continue playing, but it’s not important here. Unlike a game like Tetris, Dr. Mario is level-based, and does not continue endlessly, thus it will be up to you to decide how you want the GUI version of the game to continue after a level is cleared. (Actually, the NES version of Tetris does have a final level that had never been reached until as recently as December 2023, some 34 years after the game’s release).
+Notably, in our program, since we allow you to begin with an empty field, a cleared level is not a terminating condition. In the next assignment, you will have freedom over how you want to allow the user to continue playing, but it's not important here. Unlike a game like Tetris, Dr. Mario is level-based, and does not continue endlessly, thus it will be up to you to decide how you want the GUI version of the game to continue after a level is cleared. (Actually, the NES version of Tetris does have a final level that had never been reached until as recently as December 2023, some 34 years after the game's release).
 
 a2.py: This module will be the entry point of your program, and it must be executable (should contain the if __name__ == '__main__' block. 
-You are also required to decouple your code into at least two modules, one that handles the user interface, and another that handles the logic of your game. Your code must also contain at least one class that represents the current state of your game (you may even want additional classes). It’s up to you to decide how exactly you want to design this class, but here are a few methods you might want to have:
+You are also required to decouple your code into at least two modules, one that handles the user interface, and another that handles the logic of your game. Your code must also contain at least one class that represents the current state of your game (you may even want additional classes). It's up to you to decide how exactly you want to design this class, but here are a few methods you might want to have:
 
 A method to get the number of rows/columns in your field
 A method to create a faller
