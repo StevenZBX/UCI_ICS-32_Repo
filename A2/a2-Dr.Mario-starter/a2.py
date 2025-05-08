@@ -12,7 +12,7 @@ from logic import GameState
 from ui import TextUI
 
 
-def get_game_state() -> GameState or None:
+def get_game_state() -> GameState | None:
     """Get game state from user input."""
     try:
         rows: int = int(input())

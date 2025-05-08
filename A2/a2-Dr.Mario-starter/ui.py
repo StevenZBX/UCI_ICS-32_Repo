@@ -43,7 +43,7 @@ class TextUI:
 
     def find_matches(self) -> set[tuple[int, int]]:
         """
-        Find all 4-in-a-row matches in the current field.
+        Find all 4 matches in the current field.
         Returns a set of positions of mached elements.
         """
         matches = set()
@@ -72,8 +72,7 @@ class TextUI:
 
     def display_field(self) -> None:
         """
-        Print the current game field
-        Display the capsule and virus in the field
+        Print the current game field with capsules and viruses
         """
         matches = self.game_state.current_matches
         for r in range(self.game_state.rows):
@@ -98,7 +97,7 @@ class TextUI:
                             else:
                                 color = faller.colors[1]
                             row.append(f'[{color}]')
-                    else:  # landed state: use |color|
+                    else:  # Landed state: use |color|
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -113,13 +112,12 @@ class TextUI:
                                 color = faller.colors[1]
                             row.append(f'|{color}|')
                 else:
-                    if (r, c) in matches:
-                        # virus is lower case, capsule is upper case
+                    if (r, c) in matches: # if matches, the status will become *color* and wait for the user stress enter
                         color = cell.color.lower() if cell.content == 'virus' else cell.color
                         row.append(f'*{color}*')
                     elif cell.content == 'empty':
                         row.append('   ')
-                    elif cell.content == 'virus':
+                    elif cell.content == 'virus': # virus display the color with lower letter
                         row.append(f' {cell.color.lower()} ')
                     elif cell.content == 'capsule':
                         if cell.capsule_type == 'left':
@@ -141,38 +139,40 @@ class TextUI:
         Conducting faller creation, movement, rotation, and virus addition.
         """
         user_input = shlex.split(user)
+        valid_command = ['F', 'A', 'B', 'V', '<', '>']
+        valid_colors = ['R', 'B', 'Y']
         if not user_input:
             self.game_state.time_step()
             return
-        if user_input[0] == 'F':
-            if len(user_input) != 3:
-                return
-            color1, color2 = user_input[1], user_input[2]
-            valid_colors = ['R', 'B', 'Y']
-            if color1 not in valid_colors or color2 not in valid_colors:
-                print("ERROR")
-                return
-            self.game_state.create_faller(color1, color2)
-            top_middle = self.game_state.get_middle_cols(0)
-            for c in top_middle:
-                cell = self.game_state.field.get_cell(0, c)
-                if cell.content == 'capsule':
-                    self.game_state.game_over = True
-        elif user_input[0] in ['A', 'B', '<', '>']:
-            self.game_state.command(user_input[0])
-        elif user_input[0] == 'V':
-            if len(user_input) < 4:
-                return
-            try:
-                row: int = int(user_input[1])
-                col: int = int(user_input[2])
-                color: str = user_input[3]
-                valid_colors = ['R', 'B', 'Y']
-                if color not in valid_colors:
-                    print("ERROR")
+        if user_input[0] in valid_command:
+            if user_input[0] == 'F':
+                if len(user_input) != 3:
                     return
-                self.game_state.field.add_virus(row, col, color)
-                # add virus and check matches
-                self.game_state.current_matches = self.find_matches()
-            except (ValueError, IndexError):
-                pass
+                color1, color2 = user_input[1], user_input[2]
+                if color1 not in valid_colors or color2 not in valid_colors:
+                    return
+                self.game_state.create_faller(color1, color2)
+                top_middle = self.game_state.get_middle_cols(0)
+                for c in top_middle:
+                    cell = self.game_state.field.get_cell(0, c)
+                    if cell.content == 'capsule':
+                        self.game_state.game_over = True
+            elif user_input[0] in ['A', 'B', '<', '>']:
+                self.game_state.command(user_input[0])
+            elif user_input[0] == 'V':
+                if len(user_input) < 4:
+                    return
+                try:
+                    row: int = int(user_input[1])
+                    col: int = int(user_input[2])
+                    color: str = user_input[3]
+                    if color not in valid_colors:
+                        return
+                    # create the virus obejct
+                    self.game_state.field.add_virus(row, col, color)
+                    # add virus and check matches
+                    self.game_state.current_matches = self.find_matches()
+                except (ValueError, IndexError):
+                    pass
+        else:
+            return
