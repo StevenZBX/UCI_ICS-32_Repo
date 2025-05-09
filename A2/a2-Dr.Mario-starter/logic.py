@@ -332,33 +332,81 @@ class Field:
             cell.color = color
 
 
+    def can_capsule_fall(self, r: int, c: int) -> bool:
+        """
+        Recursively check if a capsule can fall.
+        A capsule can fall if:
+        1. The space below is empty
+        2. The capsule below can fall
+        """
+        if r + 1 >= self.rows:
+            return False
+            
+        cell = self.grid[r][c]
+        below = self.grid[r+1][c]
+        
+        if below.content == 'empty':
+            return True
+            
+        if below.content == 'capsule':
+            # For horizontal capsules, check both parts
+            if below.capsule_type == 'left':
+                if c + 1 >= self.cols:
+                    return False
+                right_below = self.grid[r+1][c+1]
+                if right_below.content != 'capsule' or right_below.capsule_type != 'right':
+                    return False
+                return self.can_capsule_fall(r+1, c) and self.can_capsule_fall(r+1, c+1)
+            # For vertical capsules, check the bottom part
+            elif below.capsule_type == 'bottom':
+                if r + 2 >= self.rows:
+                    return False
+                return self.can_capsule_fall(r+2, c)
+            # For single capsules or top parts, check recursively
+            else:
+                return self.can_capsule_fall(r+1, c)
+                
+        return False
+
+
     def apply_gravity(self) -> bool:
         """
         Apply gravity to the field.
-        Check horizontal and single capsules.
+        Check horizontal, vertical and single capsules recursively.
         """
         changed = False
-        # horizontal
+        # Process from bottom to top, right to left
         for r in reversed(range(self.rows - 1)):
-            for c in range(self.cols - 1):
+            for c in reversed(range(self.cols)):
                 cell = self.grid[r][c]
-                if cell.content == 'capsule' and cell.capsule_type == 'left':
-                    right_cell = self.grid[r][c+1]
-                    if (right_cell.content == 'capsule' and right_cell.capsule_type == 'right' and
-                        self.grid[r+1][c].content == 'empty' and self.grid[r+1][c+1].content == 'empty'):
-                        self.grid[r+1][c] = cell
-                        self.grid[r+1][c+1] = right_cell
-                        self.grid[r][c] = Cell()
-                        self.grid[r][c+1] = Cell()
-                        changed = True
-        # single
-        for r in reversed(range(self.rows - 1)):
-            for c in range(self.cols):
-                cell = self.grid[r][c]
-                if cell.content == 'capsule' and cell.capsule_type == 'single':
-                    if self.grid[r+1][c].content == 'empty':
-                        self.grid[r+1][c], self.grid[r][c] = self.grid[r][c], self.grid[r+1][c]
-                        changed = True
+                if cell.content == 'capsule':
+                    # Handle horizontal capsules
+                    if cell.capsule_type == 'left':
+                        if c + 1 < self.cols:
+                            right_cell = self.grid[r][c+1]
+                            if (right_cell.content == 'capsule' and right_cell.capsule_type == 'right' and
+                                self.can_capsule_fall(r, c) and self.can_capsule_fall(r, c+1)):
+                                self.grid[r+1][c] = cell
+                                self.grid[r+1][c+1] = right_cell
+                                self.grid[r][c] = Cell()
+                                self.grid[r][c+1] = Cell()
+                                changed = True
+                    # Handle vertical capsules
+                    elif cell.capsule_type == 'top':
+                        if r + 1 < self.rows:
+                            bottom_cell = self.grid[r+1][c]
+                            if (bottom_cell.content == 'capsule' and bottom_cell.capsule_type == 'bottom' and
+                                self.can_capsule_fall(r, c) and self.can_capsule_fall(r+1, c)):
+                                self.grid[r+2][c] = bottom_cell
+                                self.grid[r+1][c] = cell
+                                self.grid[r][c] = Cell()
+                                changed = True
+                    # Handle single capsules
+                    elif cell.capsule_type == 'single':
+                        if self.can_capsule_fall(r, c):
+                            self.grid[r+1][c] = cell
+                            self.grid[r][c] = Cell()
+                            changed = True
         return changed
 
 
@@ -368,6 +416,15 @@ class Field:
         Returns a set of matched cell positions.
         """
         matches = set()
+        def capsule_can_match(r, c):
+            if r+1 >= self.rows:
+                return True
+            below = self.grid[r+1][c]
+            if below.content == 'empty':
+                return False
+            if below.content == 'capsule':
+                return capsule_can_match(r+1, c)
+            return True
         # Horizontal
         for r in range(self.rows):
             for c in range(self.cols - 3):
@@ -381,17 +438,11 @@ class Field:
                     can_match = True
                     for i in range(4):
                         cell = self.grid[r][c+i]
-                        # only check full horizontal capsule
-                        if cell.content == 'capsule' and cell.capsule_type == 'left':
-                            if c+i+1 < self.cols:
-                                right = self.grid[r][c+i+1]
-                                if right.content == 'capsule' and right.capsule_type == 'right':
-                                    # check the capsule below
-                                    if (r < self.rows-1 and
-                                        self.grid[r+1][c+i].content == 'empty' and
-                                        self.grid[r+1][c+i+1].content == 'empty'):
-                                        can_match = False
-                                        break
+                        # recursion check
+                        if cell.content == 'capsule':
+                            if not capsule_can_match(r, c+i):
+                                can_match = False
+                                break
                     if can_match:
                         matches.update((r, c+i) for i in range(4))
         # Vertical
@@ -407,15 +458,11 @@ class Field:
                     can_match = True
                     for i in range(4):
                         cell = self.grid[r+i][c]
-                        if cell.content == 'capsule' and cell.capsule_type == 'left':
-                            if c+1 < self.cols:
-                                right = self.grid[r+i][c+1]
-                                if right.content == 'capsule' and right.capsule_type == 'right':
-                                    if (r+i < self.rows-1 and
-                                        self.grid[r+i+1][c].content == 'empty' and
-                                        self.grid[r+i+1][c+1].content == 'empty'):
-                                        can_match = False
-                                        break
+                        # recursion check
+                        if cell.content == 'capsule':
+                            if not capsule_can_match(r+i, c):
+                                can_match = False
+                                break
                     if can_match:
                         matches.update((r+i, c) for i in range(4))
         return matches
