@@ -24,7 +24,7 @@ class TextUI:
         Processing input, output, and updating the game status.
         """
         # check whether the cells in the field are matched
-        self.game_state.current_matches = self.find_matches()
+        self.game_state.current_matches = self.game_state.field.matches()
         while True:
             self.display_field()
             if self.game_state.game_over:
@@ -41,35 +41,6 @@ class TextUI:
                 break
 
 
-    def find_matches(self) -> set[tuple[int, int]]:
-        """
-        Find all 4 matches in the current field.
-        Returns a set of positions of mached elements.
-        """
-        matches = set()
-        # Check horizontal matches
-        for r in range(self.game_state.rows):
-            for c in range(self.game_state.cols - 3):
-                color = self.game_state.field.get_cell(r, c).color
-                if color is None:
-                    continue
-                if all(self.game_state.field.get_cell(r, c+i).color and 
-                      self.game_state.field.get_cell(r, c+i).color.upper() == color.upper() 
-                      for i in range(4)):
-                    matches.update((r, c+i) for i in range(4))
-        # Check vertical matches
-        for r in range(self.game_state.rows - 3):
-            for c in range(self.game_state.cols):
-                color = self.game_state.field.get_cell(r, c).color
-                if color is None:
-                    continue
-                if all(self.game_state.field.get_cell(r+i, c).color and 
-                      self.game_state.field.get_cell(r+i, c).color.upper() == color.upper() 
-                      for i in range(4)):
-                    matches.update((r+i, c) for i in range(4))
-        return matches
-
-
     def display_field(self) -> None:
         """
         Print the current game field with capsules and viruses
@@ -83,7 +54,7 @@ class TextUI:
                 faller_positions = faller.get_positions() if faller is not None else []
                 if (r, c) in faller_positions:
                     if self.game_state.can_move_down():
-                        # Falling state: use [color]
+                        # Falling state use [color]
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -97,7 +68,7 @@ class TextUI:
                             else:
                                 color = faller.colors[1]
                             row.append(f'[{color}]')
-                    else:  # Landed state: use |color|
+                    else:  # Landed state use |color|
                         if faller.orientation == 'horizontal':
                             if c == faller.col:
                                 color = faller.colors[0]
@@ -112,7 +83,7 @@ class TextUI:
                                 color = faller.colors[1]
                             row.append(f'|{color}|')
                 else:
-                    if (r, c) in matches: # if matches, the status will become *color* and wait for the user stress enter
+                    if (r, c) in matches: # if matches, the status will become *color* and wait for removing after  user stress enter
                         color = cell.color.lower() if cell.content == 'virus' else cell.color
                         row.append(f'*{color}*')
                     elif cell.content == 'empty':
@@ -168,10 +139,10 @@ class TextUI:
                     color: str = user_input[3]
                     if color not in valid_colors:
                         return
-                    # create the virus obejct
+                    # create the virus obejct and add it to the field
                     self.game_state.field.add_virus(row, col, color)
-                    # add virus and check matches
-                    self.game_state.current_matches = self.find_matches()
+                    # after adding, check whether there are matched elements
+                    self.game_state.current_matches = self.game_state.field.matches()
                 except (ValueError, IndexError):
                     pass
         else:

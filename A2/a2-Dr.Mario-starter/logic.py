@@ -8,8 +8,7 @@
 class GameState:
     def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
         """
-        Initialize the game state with the given field size and optional contents.
-        Sets up the field, faller, and game status flags.
+        Initialize the game state with the given rows, columns and contents.
         """
         self.rows = rows
         self.cols = cols
@@ -22,8 +21,8 @@ class GameState:
 
     def create_faller(self, color1: str, color2: str) -> None:
         """
-        Attempt to create a new faller in the center of the second row.
-        If the position is blocked, force place and set game over.
+        Create a new faller in the center of the second row.
+        If the posititon is occupied, overlap and game over.
         """
         if self.faller is not None:
             return
@@ -49,8 +48,7 @@ class GameState:
 
     def get_middle_cols(self, row: int) -> list[int]:
         """
-        Return the middle column(s) for a given row.
-        Used for capsule spawning logic.
+        Return the middle column for a given row.
         """
         if self.cols % 2 == 1:
             return [self.cols // 2]
@@ -59,8 +57,11 @@ class GameState:
 
     def command(self, command: str) -> None:
         """
-        Process a single game command (rotate, move, add virus, etc).
-        Delegates to the appropriate game logic method.
+        Process a single game command for change the capsules status.
+        A: Rotating clockwise
+        B: Rotating counter clockwise
+        <: Moving left
+        >: Moving right
         """
         if command == 'A':
             self.rotate_clockwise()
@@ -86,8 +87,7 @@ class GameState:
 
     def rotate_clockwise(self) -> None:
         """
-        Rotate the current faller clockwise if possible.
-        Handles wall kicks if needed.
+        Rotate the current faller clockwise.
         """
         if self.faller is None or self.faller.state != 'falling':
             return
@@ -102,8 +102,7 @@ class GameState:
 
     def rotate_counter_clockwise(self) -> None:
         """
-        Rotate the current faller counter-clockwise if possible.
-        Handles wall kicks if needed.
+        Rotate the current faller counter-clockwise.
         """
         if self.faller is None or self.faller.state != 'falling':
             return
@@ -119,7 +118,6 @@ class GameState:
     def positions_available(self, positions: list[tuple[int, int]]) -> bool:
         """
         Check if all given positions are available for movement.
-        Used for collision and boundary checks.
         """
         return all(
             0 <= r < self.rows and 0 <= c < self.cols and
@@ -131,7 +129,6 @@ class GameState:
     def move_left(self) -> None:
         """
         Move the faller one column to the left if possible.
-        Only works if the faller is currently falling.
         """
         if self.faller is None or self.faller.state != 'falling':
             return
@@ -146,7 +143,6 @@ class GameState:
     def move_right(self) -> None:
         """
         Move the faller one column to the right if possible.
-        Only works if the faller is currently falling.
         """
         if self.faller is None or self.faller.state != 'falling':
             return
@@ -160,8 +156,8 @@ class GameState:
 
     def time_step(self) -> None:
         """
-        Advance the game by one time step (gravity or landing).
-        Handles faller movement and match/gravity logic.
+        When user stress enter, the program will conduct time function
+        The function time_step is modeling for the time passing
         """
         if self.game_over:
             return
@@ -207,7 +203,6 @@ class GameState:
     def can_move_down(self) -> bool:
         """
         Check if the current faller can move down by one row.
-        Used to determine if the faller should land.
         """
         if self.faller is None:
             return False
@@ -218,7 +213,6 @@ class GameState:
     def freeze_faller(self) -> None:
         """
         Convert the current faller into fixed capsules in the field.
-        Sets the appropriate capsule types and clears the faller.
         """
         if self.faller is None:
             return
@@ -246,8 +240,7 @@ class GameState:
 
     def single_capsule_fall(self) -> None:
         """
-        Let all single (independent) capsules fall one row if possible.
-        Only applies to capsules not connected to others.
+        For single capsule fall automatically if the user stress time_step
         """
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
@@ -260,14 +253,13 @@ class GameState:
 
     def handle_matches_and_gravity(self) -> None:
         """
-        Handle all post-move game logic:
         1. check single capsule and let them fall once
         2. check whether there exists matches
         3. if matches, use *color*
         4. if *color*, remove all matches
-        5. if any whole capsule (left/right or top/bottom) can fall, apply gravity
+        5. if any whole capsule can fall, apply gravity
         """
-        matches = self.field.find_matches()
+        matches = self.field.matches()
         if matches:
             if not self.current_matches:  # if new
                 self.current_matches = matches  # save
@@ -281,8 +273,7 @@ class GameState:
 
     def has_viruses(self) -> bool:
         """
-        Return True if there are any viruses left in the field.
-        Used to determine if the level is cleared.
+        Check the stauts of the field
         """
         return any(
             self.field.get_cell(r, c).content == 'virus'
@@ -294,8 +285,7 @@ class GameState:
 class Field:
     def __init__(self, rows: int, cols: int, contents: list[str] = None) -> None:
         """
-        Initialize the field grid with the given size and optional contents.
-        Each cell is set up as empty, virus, or capsule.
+        Initialize the field grid rows, columns and contents
         """
         self.rows = rows
         self.cols = cols
@@ -306,8 +296,8 @@ class Field:
 
     def initialize_from_contents(self, contents: list[str]) -> None:
         """
-        Fill the field grid from a list of string contents.
-        Used for loading custom or test scenarios.
+        If the status is contents
+        Initialize the field with the contents from user inputing
         """
         for r in range(self.rows):
             line = contents[r]
@@ -328,7 +318,6 @@ class Field:
     def get_cell(self, row: int, col: int) -> 'Cell':
         """
         Return the Cell object at the specified row and column.
-        Used for all field access and manipulation.
         """
         return self.grid[row][col]
 
@@ -336,7 +325,6 @@ class Field:
     def add_virus(self, row: int, col: int, color: str) -> None:
         """
         Add a virus of the given color at the specified position.
-        Only works if the cell is currently empty.
         """
         cell = self.grid[row][col]
         if cell.content == 'empty':
@@ -350,7 +338,7 @@ class Field:
         Check horizontal and single capsules.
         """
         changed = False
-        # horizontal cell
+        # horizontal
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols - 1):
                 cell = self.grid[r][c]
@@ -363,7 +351,7 @@ class Field:
                         self.grid[r][c] = Cell()
                         self.grid[r][c+1] = Cell()
                         changed = True
-        # single cell
+        # single
         for r in reversed(range(self.rows - 1)):
             for c in range(self.cols):
                 cell = self.grid[r][c]
@@ -374,10 +362,11 @@ class Field:
         return changed
 
 
-    def find_matches(self) -> set[tuple[int, int]]:
+    def matches(self) -> set[tuple[int, int]]:
         """
-        Find all 4-in-a-row matches (horizontal or vertical).
+        Find all matches.
         Returns a set of matched cell positions.
+        Horizontal capsule can not match if the whole capsule below is empty
         """
         matches = set()
         # Horizontal
@@ -390,7 +379,32 @@ class Field:
                        self.grid[r][c+i].color.lower() == color.lower() and
                        self.grid[r][c+i].content in ['capsule', 'virus']
                        for i in range(4)):
-                    matches.update((r, c+i) for i in range(4))
+                    # check whether there is a capsule can not be mathched in the matches
+                    can_match = True
+                    checked_pairs = set()
+                    for i in range(4):
+                        cell = self.grid[r][c+i]
+                        if cell.content == 'capsule' and cell.capsule_type == 'left':
+                            # check right
+                            if c+i+1 < self.cols:
+                                right = self.grid[r][c+i+1]
+                                if right.content == 'capsule' and right.capsule_type == 'right':
+                                    pair = (r, c+i)
+                                    if pair not in checked_pairs:
+                                        # check whether the whole capsule below is empty
+                                        if (r < self.rows-1 and
+                                            self.grid[r+1][c+i].content == 'empty' and
+                                            self.grid[r+1][c+i+1].content == 'empty'):
+                                            can_match = False
+                                            break
+                                        checked_pairs.add(pair)
+                        # check other cells
+                        if cell.content in ['capsule', 'virus'] and r < self.rows-1:
+                            if cell.capsule_type not in ['left', 'right'] and self.grid[r+1][c+i].content == 'empty':
+                                can_match = False
+                                break
+                    if can_match:
+                        matches.update((r, c+i) for i in range(4))
         # Vertical
         for r in range(self.rows - 3):
             for c in range(self.cols):
@@ -401,14 +415,34 @@ class Field:
                        self.grid[r+i][c].color.lower() == color.lower() and
                        self.grid[r+i][c].content in ['capsule', 'virus']
                        for i in range(4)):
-                    matches.update((r+i, c) for i in range(4))
+                    can_match = True
+                    checked_pairs = set()
+                    for i in range(4):
+                        cell = self.grid[r+i][c]
+                        if cell.content == 'capsule' and cell.capsule_type == 'left':
+                            if c+1 < self.cols:
+                                right = self.grid[r+i][c+1]
+                                if right.content == 'capsule' and right.capsule_type == 'right':
+                                    pair = (r+i, c)
+                                    if pair not in checked_pairs:
+                                        if (r+i < self.rows-1 and
+                                            self.grid[r+i+1][c].content == 'empty' and
+                                            self.grid[r+i+1][c+1].content == 'empty'):
+                                            can_match = False
+                                            break
+                                        checked_pairs.add(pair)
+                        if cell.content in ['capsule', 'virus'] and r+i < self.rows-1:
+                            if cell.capsule_type not in ['left', 'right'] and self.grid[r+i+1][c].content == 'empty':
+                                can_match = False
+                                break
+                    if can_match:
+                        matches.update((r+i, c) for i in range(4))
         return matches
 
 
     def remove_matches(self, matches: set[tuple[int, int]]) -> None:
         """
         Remove all matched cells from the field and update capsule types.
-        Handles splitting capsules and clearing matched cells.
         """
         for (r, c) in matches:
             cell = self.grid[r][c]
@@ -457,6 +491,7 @@ class Cell:
         self.content = 'empty'
         self.color = None
         self.capsule_type = None
+        self.state = 'empty'
 
 
 class Faller:
@@ -475,7 +510,6 @@ class Faller:
     def rotate_counter_clockwise(self) -> 'Faller':
         """
         Return a new Faller rotated counter-clockwise from the current orientation.
-        Adjusts color order as needed.
         """
         if self.orientation == 'horizontal':
             return Faller('vertical', (self.colors[0], self.colors[1]), self.row, self.col)
@@ -486,7 +520,6 @@ class Faller:
     def rotate_clockwise(self) -> 'Faller':
         """
         Return a new Faller rotated clockwise from the current orientation.
-        Adjusts color order as needed.
         """
         if self.orientation == 'horizontal':
             return Faller('vertical', (self.colors[1], self.colors[0]), self.row, self.col)
@@ -497,7 +530,6 @@ class Faller:
     def wall_kick_left(self) -> None:
         """
         Move the faller one column to the left for wall kick during rotation.
-        Used to allow rotation near field edges.
         """
         self.col -= 1
 
@@ -528,7 +560,6 @@ class Faller:
     def get_positions_at_col(self, new_col: int) -> list[tuple[int, int]]:
         """
         Return a list of positions the faller would occupy at a new column.
-        Used for left/right movement and wall kicks.
         """
         if self.orientation == 'horizontal':
             return [(self.row, new_col), (self.row, new_col + 1)]
