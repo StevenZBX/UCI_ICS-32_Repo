@@ -366,7 +366,6 @@ class Field:
         """
         Find all matches.
         Returns a set of matched cell positions.
-        只针对4连中完整的水平胶囊（left+right配对）做底下空位判定，若其下方有空则该4连不能消除。
         """
         matches = set()
         # Horizontal
@@ -382,12 +381,12 @@ class Field:
                     can_match = True
                     for i in range(4):
                         cell = self.grid[r][c+i]
-                        # 只针对完整的水平胶囊做判定
+                        # only check full horizontal capsule
                         if cell.content == 'capsule' and cell.capsule_type == 'left':
                             if c+i+1 < self.cols:
                                 right = self.grid[r][c+i+1]
                                 if right.content == 'capsule' and right.capsule_type == 'right':
-                                    # 检查这对水平胶囊整体下方
+                                    # check the capsule below
                                     if (r < self.rows-1 and
                                         self.grid[r+1][c+i].content == 'empty' and
                                         self.grid[r+1][c+i+1].content == 'empty'):
@@ -408,7 +407,6 @@ class Field:
                     can_match = True
                     for i in range(4):
                         cell = self.grid[r+i][c]
-                        # 只针对完整的水平胶囊做判定
                         if cell.content == 'capsule' and cell.capsule_type == 'left':
                             if c+1 < self.cols:
                                 right = self.grid[r+i][c+1]
