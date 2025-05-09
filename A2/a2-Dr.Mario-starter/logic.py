@@ -366,7 +366,7 @@ class Field:
         """
         Find all matches.
         Returns a set of matched cell positions.
-        Horizontal capsule can not match if the whole capsule below is empty
+        只针对4连中完整的水平胶囊（left+right配对）做底下空位判定，若其下方有空则该4连不能消除。
         """
         matches = set()
         # Horizontal
@@ -379,30 +379,20 @@ class Field:
                        self.grid[r][c+i].color.lower() == color.lower() and
                        self.grid[r][c+i].content in ['capsule', 'virus']
                        for i in range(4)):
-                    # check whether there is a capsule can not be mathched in the matches
                     can_match = True
-                    checked_pairs = set()
                     for i in range(4):
                         cell = self.grid[r][c+i]
+                        # 只针对完整的水平胶囊做判定
                         if cell.content == 'capsule' and cell.capsule_type == 'left':
-                            # check right
                             if c+i+1 < self.cols:
                                 right = self.grid[r][c+i+1]
                                 if right.content == 'capsule' and right.capsule_type == 'right':
-                                    pair = (r, c+i)
-                                    if pair not in checked_pairs:
-                                        # check whether the whole capsule below is empty
-                                        if (r < self.rows-1 and
-                                            self.grid[r+1][c+i].content == 'empty' and
-                                            self.grid[r+1][c+i+1].content == 'empty'):
-                                            can_match = False
-                                            break
-                                        checked_pairs.add(pair)
-                        # check other cells
-                        if cell.content in ['capsule', 'virus'] and r < self.rows-1:
-                            if cell.capsule_type not in ['left', 'right'] and self.grid[r+1][c+i].content == 'empty':
-                                can_match = False
-                                break
+                                    # 检查这对水平胶囊整体下方
+                                    if (r < self.rows-1 and
+                                        self.grid[r+1][c+i].content == 'empty' and
+                                        self.grid[r+1][c+i+1].content == 'empty'):
+                                        can_match = False
+                                        break
                     if can_match:
                         matches.update((r, c+i) for i in range(4))
         # Vertical
@@ -416,25 +406,18 @@ class Field:
                        self.grid[r+i][c].content in ['capsule', 'virus']
                        for i in range(4)):
                     can_match = True
-                    checked_pairs = set()
                     for i in range(4):
                         cell = self.grid[r+i][c]
+                        # 只针对完整的水平胶囊做判定
                         if cell.content == 'capsule' and cell.capsule_type == 'left':
                             if c+1 < self.cols:
                                 right = self.grid[r+i][c+1]
                                 if right.content == 'capsule' and right.capsule_type == 'right':
-                                    pair = (r+i, c)
-                                    if pair not in checked_pairs:
-                                        if (r+i < self.rows-1 and
-                                            self.grid[r+i+1][c].content == 'empty' and
-                                            self.grid[r+i+1][c+1].content == 'empty'):
-                                            can_match = False
-                                            break
-                                        checked_pairs.add(pair)
-                        if cell.content in ['capsule', 'virus'] and r+i < self.rows-1:
-                            if cell.capsule_type not in ['left', 'right'] and self.grid[r+i+1][c].content == 'empty':
-                                can_match = False
-                                break
+                                    if (r+i < self.rows-1 and
+                                        self.grid[r+i+1][c].content == 'empty' and
+                                        self.grid[r+i+1][c+1].content == 'empty'):
+                                        can_match = False
+                                        break
                     if can_match:
                         matches.update((r+i, c) for i in range(4))
         return matches
