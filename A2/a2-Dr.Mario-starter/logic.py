@@ -378,6 +378,8 @@ class Field:
                 left_below = self.grid[r+1][c-1]
                 if left_below.content != 'capsule' or left_below.capsule_type != 'left':
                     return False
+                return (self.can_capsule_fall(r+1, c, visited) and 
+                       self.can_capsule_fall(r+1, c-1, visited))
             # For vertical capsules, check the bottom part
             elif below.capsule_type == 'bottom':
                 if r + 2 >= self.rows:
