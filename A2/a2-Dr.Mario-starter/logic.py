@@ -332,13 +332,26 @@ class Field:
             cell.color = color
 
 
-    def can_capsule_fall(self, r: int, c: int) -> bool:
+    def can_capsule_fall(self, r: int, c: int, visited: set = None) -> bool:
         """
-        Recursively check if a capsule can fall.
+        Check if a capsule at the given position can fall.
         A capsule can fall if:
         1. The space below is empty
         2. The capsule below can fall
+        3. The capsule below can merge with this capsule
+        
+        r: row position
+        c: column position
+        visited: set of visited positions to prevent infinite recursion
         """
+        if visited is None:
+            visited = set()
+            
+        if (r, c) in visited:
+            return True  # prevent infinite recursion
+            
+        visited.add((r, c))
+        
         if r + 1 >= self.rows:
             return False
             
@@ -356,15 +369,23 @@ class Field:
                 right_below = self.grid[r+1][c+1]
                 if right_below.content != 'capsule' or right_below.capsule_type != 'right':
                     return False
-                return self.can_capsule_fall(r+1, c) and self.can_capsule_fall(r+1, c+1)
+                # Both parts of horizontal capsule must be able to fall
+                return (self.can_capsule_fall(r+1, c, visited) and 
+                       self.can_capsule_fall(r+1, c+1, visited))
+            elif below.capsule_type == 'right':
+                if c - 1 < 0:
+                    return False
+                left_below = self.grid[r+1][c-1]
+                if left_below.content != 'capsule' or left_below.capsule_type != 'left':
+                    return False
             # For vertical capsules, check the bottom part
             elif below.capsule_type == 'bottom':
                 if r + 2 >= self.rows:
                     return False
-                return self.can_capsule_fall(r+2, c)
+                return self.can_capsule_fall(r+2, c, visited)
             # For single capsules or top parts, check recursively
             else:
-                return self.can_capsule_fall(r+1, c)
+                return self.can_capsule_fall(r+1, c, visited)
                 
         return False
 
@@ -416,55 +437,67 @@ class Field:
         Returns a set of matched cell positions.
         """
         matches = set()
-        def capsule_can_match(r, c):
-            if r+1 >= self.rows:
-                return True
-            below = self.grid[r+1][c]
-            if below.content == 'empty':
-                return False
-            if below.content == 'capsule':
-                return capsule_can_match(r+1, c)
-            return True
-        # Horizontal
+        # horizontal match
         for r in range(self.rows):
-            for c in range(self.cols - 3):
+            c = 0
+            while c < self.cols:
+                start = c
                 color = self.grid[r][c].color
                 if color is None or self.grid[r][c].content not in ['capsule', 'virus']:
+                    c += 1
                     continue
-                if all(self.grid[r][c+i].color is not None and
-                       self.grid[r][c+i].color.lower() == color.lower() and
-                       self.grid[r][c+i].content in ['capsule', 'virus']
-                       for i in range(4)):
+                # find continuous same color
+                while (c < self.cols and
+                       self.grid[r][c].color is not None and
+                       self.grid[r][c].color.lower() == color.lower() and
+                       self.grid[r][c].content in ['capsule', 'virus']):
+                    c += 1
+                length = c - start
+                if length >= 4:
                     can_match = True
-                    for i in range(4):
-                        cell = self.grid[r][c+i]
-                        # recursion check
+                    for i in range(start, c):
+                        cell = self.grid[r][i]
                         if cell.content == 'capsule':
-                            if not capsule_can_match(r, c+i):
-                                can_match = False
-                                break
+                            if cell.capsule_type == 'left' and i+1 < self.cols: # check left side
+                                right_cell = self.grid[r][i+1]
+                                if right_cell.content == 'capsule' and right_cell.capsule_type == 'right':
+                                    if self.can_capsule_fall(r, i) and self.can_capsule_fall(r, i+1):
+                                        can_match = False
+                                        break
+                            elif cell.capsule_type == 'right' and i-1 >= 0: # check right side
+                                left_cell = self.grid[r][i-1]
+                                if left_cell.content == 'capsule' and left_cell.capsule_type == 'left':
+                                    if self.can_capsule_fall(r, i) and self.can_capsule_fall(r, i-1):
+                                        can_match = False
+                                        break
+                            elif cell.capsule_type == 'single':
+                                # check single
+                                if self.can_capsule_fall(r, i):
+                                    can_match = False
+                                    break
+                            elif cell.capsule_type != 'right':
+                                if self.can_capsule_fall(r, i):
+                                    can_match = False
+                                    break
                     if can_match:
-                        matches.update((r, c+i) for i in range(4))
-        # Vertical
-        for r in range(self.rows - 3):
-            for c in range(self.cols):
+                        matches.update((r, i) for i in range(start, c))
+        # vertical match
+        for c in range(self.cols):
+            r = 0
+            while r < self.rows:
+                start = r
                 color = self.grid[r][c].color
                 if color is None or self.grid[r][c].content not in ['capsule', 'virus']:
+                    r += 1
                     continue
-                if all(self.grid[r+i][c].color is not None and
-                       self.grid[r+i][c].color.lower() == color.lower() and
-                       self.grid[r+i][c].content in ['capsule', 'virus']
-                       for i in range(4)):
-                    can_match = True
-                    for i in range(4):
-                        cell = self.grid[r+i][c]
-                        # recursion check
-                        if cell.content == 'capsule':
-                            if not capsule_can_match(r+i, c):
-                                can_match = False
-                                break
-                    if can_match:
-                        matches.update((r+i, c) for i in range(4))
+                while (r < self.rows and
+                       self.grid[r][c].color is not None and
+                       self.grid[r][c].color.lower() == color.lower() and
+                       self.grid[r][c].content in ['capsule', 'virus']):
+                    r += 1
+                length = r - start
+                if length >= 4:
+                    matches.update((i, c) for i in range(start, r))
         return matches
 
 
