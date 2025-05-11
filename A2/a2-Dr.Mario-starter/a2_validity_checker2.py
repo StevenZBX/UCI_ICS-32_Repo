@@ -324,7 +324,7 @@ def make_test_lines() -> List['TestLine']:
     test_lines.append(TestOutputLine(' ------------ ', 10.0))
     test_lines.append(TestInputLine(''))
     test_lines.append(TestOutputLine('|            |', 10.0))
-    test_lines.append(TestOutputLine('|            |', 10.0))
+    test_lines.append(TestOutputLine('|          r |', 10.0))
     test_lines.append(TestOutputLine('|            |', 10.0))
     test_lines.append(TestOutputLine('| R          |', 10.0))
     test_lines.append(TestOutputLine(' ------------ ', 10.0))
