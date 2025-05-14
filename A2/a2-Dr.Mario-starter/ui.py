@@ -137,7 +137,7 @@ class TextUI:
                     row: int = int(user_input[1])
                     col: int = int(user_input[2])
                     color: str = user_input[3]
-                    if color not in valid_colors:
+                    if color.upper() not in valid_colors:
                         return
                     # create the virus obejct and add it to the field
                     self.game_state.field.add_virus(row, col, color)
