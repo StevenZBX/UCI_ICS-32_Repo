@@ -14,6 +14,7 @@ import json
 import os
 from ds_messenger import DirectMessenger, DirectMessage
 
+
 class LoginWindow:
     def __init__(self):
         self.window = tk.Tk()
@@ -26,7 +27,7 @@ class LoginWindow:
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # Title
-        title_label = ttk.Label(main_frame, text="ICS 32 Direct Messenger", font=("Helvetica", 14))
+        title_label = ttk.Label(main_frame, text="Direct Messenger", font=("Helvetica", 14))
         title_label.pack(pady=(0, 20))
         
         # Username frame
@@ -70,9 +71,9 @@ class LoginWindow:
         password = self.password_entry.get()
         
         if username and password:
-            messenger = DirectMessenger(username=username, password=password)
+            messenger = DirectMessenger(dsuserver='127.0.0.1', username=username, password=password)
             if messenger.token:
-                self.window.destroy()  # 登录或注册成功
+                self.window.destroy() # if login successful, close the login window and open the chat window
                 ChatWindow(messenger)
             else:
                 messagebox.showerror("Error", "Login or registration failed!")
@@ -82,11 +83,13 @@ class LoginWindow:
 
 class ChatWindow:
     def __init__(self, messenger):
+        self.path = "./store"
+        self.file = "user.json"
         self.messenger = messenger
         self.username = messenger.username
         self.window = tk.Tk()
         self.window.title(f"Chat - {messenger.username}")
-        self.window.geometry("800x600")
+        self.window.geometry("900x600")
         
         # Initialize data
         self.contacts = set()
@@ -156,11 +159,9 @@ class ChatWindow:
         """Setup the menu bar"""
         menubar = tk.Menu(self.window)
         self.window.config(menu=menubar)
-        
         # File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Save", command=self.save_data)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.window.destroy)
     
@@ -173,27 +174,50 @@ class ChatWindow:
             if contact not in self.messages:
                 self.messages[contact] = []
     
+    def load_data(self):
+        """Load only read history messages from user.json file."""
+        try:
+            with open('./store/users.json', 'r') as f:
+                data = json.load(f)
+            user_data = data.get(self.username)
+            if user_data and 'messages' in user_data:
+                for msg in user_data['messages']:
+                    if not msg.get('read', True):
+                        continue  # Skip unread messages
+                    dm = DirectMessage(
+                        message=msg.get('message'),
+                        sender=msg.get('from', self.username),
+                        recipient=msg.get('recipient', ''),
+                        timestamp=msg.get('timestamp')
+                    )
+                    contact = dm.sender if dm.sender != self.username else dm.recipient
+                    if not contact:
+                        contact = "history"
+                    if contact not in self.contacts:
+                        self.contacts.add(contact)
+                        self.contacts_tree.insert('', 'end', text=contact)
+                    if contact not in self.messages:
+                        self.messages[contact] = []
+                    self.messages[contact].append(dm)
+        except Exception as e:
+            print(f"Error loading notebook: {e}")
+
     def on_contact_select(self, event):
-        """Handle contact selection"""
         selection = self.contacts_tree.selection()
         if selection:
             contact = self.contacts_tree.item(selection[0])['text']
             self.display_messages(contact)
     
     def display_messages(self, contact):
-        """Display messages for selected contact"""
+        """Display messages for selected contact (no read/unread status)."""
         self.message_display.config(state=tk.NORMAL)
         self.message_display.delete(1.0, tk.END)
-        
         if contact in self.messages:
             for msg in self.messages[contact]:
                 if msg.sender == self.messenger.username:
-                    # Outgoing message
                     self.message_display.insert(tk.END, f"You: {msg.message}\n", "outgoing")
                 else:
-                    # Incoming message
                     self.message_display.insert(tk.END, f"{msg.sender}: {msg.message}\n", "incoming")
-        
         self.message_display.config(state=tk.DISABLED)
         self.message_display.tag_configure("outgoing", justify=tk.RIGHT, foreground="blue")
         self.message_display.tag_configure("incoming", justify=tk.LEFT, foreground="green")
@@ -222,7 +246,7 @@ class ChatWindow:
                 messagebox.showerror("Error", "Failed to send message!")
     
     def check_new_messages(self):
-        """Periodically check for new messages"""
+        """Periodically check for new messages from the server, with deduplication."""
         if self.messenger and self.messenger.token:
             new_messages = self.messenger.retrieve_new()
             for msg in new_messages:
@@ -232,60 +256,14 @@ class ChatWindow:
                     self.contacts_tree.insert('', 'end', text=sender)
                 if sender not in self.messages:
                     self.messages[sender] = []
-                self.messages[sender].append(msg)
-                # Update display if this contact is selected
+                # Deduplication: only add if not already present
+                if not any(m.timestamp == msg.timestamp and m.message == msg.message and m.sender == msg.sender for m in self.messages[sender]):
+                    self.messages[sender].append(msg)
+                # If this contact is selected, update display
                 selection = self.contacts_tree.selection()
                 if selection and self.contacts_tree.item(selection[0])['text'] == sender:
                     self.display_messages(sender)
-        
-        # Schedule next check
         self.window.after(5000, self.check_new_messages)
-    
-    def save_data(self):
-        """Save contacts和messages到messenger_data.json"""
-        data = {
-            'contacts': list(self.contacts),
-            'messages': {
-                contact: [
-                    {
-                        'message': msg.message,
-                        'sender': msg.sender,
-                        'recipient': msg.recipient,
-                        'timestamp': msg.timestamp
-                    }
-                    for msg in messages
-                ]
-                for contact, messages in self.messages.items()
-            }
-        }
-        
-        with open('messenger_data.json', 'w') as f:
-            json.dump(data, f)
-    
-    def load_data(self):
-        """Load contacts and messages from file"""
-        try:
-            with open('messenger_data.json', 'r') as f:
-                data = json.load(f)
-                
-                # Load contacts
-                for contact in data['contacts']:
-                    self.contacts.add(contact)
-                    self.contacts_tree.insert('', 'end', text=contact)
-                
-                # Load messages
-                for contact, messages in data['messages'].items():
-                    self.messages[contact] = [
-                        DirectMessage(
-                            message=msg['message'],
-                            sender=msg['sender'],
-                            recipient=msg['recipient'],
-                            timestamp=msg['timestamp']
-                        )
-                        for msg in messages
-                    ]
-        except FileNotFoundError:
-            pass
     
     def run(self):
         self.window.mainloop()

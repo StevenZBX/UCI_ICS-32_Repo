@@ -40,14 +40,14 @@ def direct_message(token: str, message: str, recipient: str) -> str:
         }
     })
 
-def fetch(token: str, what: str) -> str:
+def fetch(token: str, status: str) -> str:
     """
     Create a fetch request for messages
-    what can be either "all" or "unread"
+    status can be either "all" or "unread"
     """
     return json.dumps({
         "token": token,
-        "fetch": what
+        "fetch": status
     })
 
 def extract_json(json_msg: str) -> ServerResponse:
