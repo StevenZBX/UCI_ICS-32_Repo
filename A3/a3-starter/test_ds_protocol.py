@@ -1,3 +1,12 @@
+"""
+Unit test for protocol module
+"""
+
+# NAME: Boxuan Zhang
+# EMAIL: boxuanz3@uci.edu
+# STUDENT ID: 95535906
+
+
 import unittest
 import json
 
@@ -5,48 +14,48 @@ from ds_protocol import *
 
 
 class TestDSProtocol(unittest.TestCase):
-    def test_authenticate_request(self):
+    def test_join_request(self) -> None:
         username = "testuser"
         password = "testpass"
         request = authenticate(username, password)
         json_obj = json.loads(request)
-        self.assertIn("authenticate", json_obj)
-        self.assertEqual(json_obj["authenticate"]["username"], username)
-        self.assertEqual(json_obj["authenticate"]["password"], password)
+        assert "authenticate" in json_obj
+        assert json_obj["authenticate"]["username"] == username
+        assert json_obj["authenticate"]["password"] == password
 
-    def test_direct_message_request(self):
+    def test_direct_message_request(self) -> None:
         token = "test-token"
         message = "Hello!"
         recipient = "recipient"
         request = direct_message(token, message, recipient)
         json_obj = json.loads(request)
-        self.assertIn("token", json_obj)
-        self.assertIn("directmessage", json_obj)
-        self.assertEqual(json_obj["token"], token)
-        self.assertEqual(json_obj["directmessage"]["entry"], message)
-        self.assertEqual(json_obj["directmessage"]["recipient"], recipient)
-        self.assertIn("timestamp", json_obj["directmessage"])
+        assert "token" in json_obj
+        assert "directmessage" in json_obj
+        assert json_obj["token"] == token
+        assert json_obj["directmessage"]["entry"] == message
+        assert json_obj["directmessage"]["recipient"] == recipient
+        assert "timestamp" in json_obj["directmessage"]
 
-    def test_fetch_request(self):
+    def test_fetch_request(self) -> None:
         token = "test-token"
-        what = "all"
-        request = fetch(token, what)
+        status = "all"
+        request = fetch(token, status)
         json_obj = json.loads(request)
-        self.assertIn("token", json_obj)
-        self.assertIn("fetch", json_obj)
-        self.assertEqual(json_obj["token"], token)
-        self.assertEqual(json_obj["fetch"], what)
+        assert "token" in json_obj
+        assert "fetch" in json_obj
+        assert json_obj["token"] == token
+        assert json_obj["fetch"] == status
 
-    def test_extract_json_auth_response(self):
+    def test_extract_json_auth_response(self) -> None:
         response = '{"response": {"type": "ok", "message": "Welcome back, testuser", "token": "test-token"}}'
         result = extract_json(response)
-        self.assertIsInstance(result, ServerResponse)
-        self.assertEqual(result.type, "ok")
-        self.assertEqual(result.message, "Welcome back, testuser")
-        self.assertEqual(result.token, "test-token")
-        self.assertEqual(result.messages, [])
+        assert isinstance(result, ServerResponse)
+        assert result.type == "ok"
+        assert result.message == "Welcome back, testuser"
+        assert result.token == "test-token"
+        assert result.messages == []
 
-    def test_extract_json_messages_response(self):
+    def test_extract_json_messages_response(self) -> None:
         response = '''{
             "response": {
                 "type": "ok",
@@ -65,22 +74,22 @@ class TestDSProtocol(unittest.TestCase):
             }
         }'''
         result = extract_json(response)
-        self.assertIsInstance(result, ServerResponse)
-        self.assertEqual(result.type, "ok")
-        self.assertEqual(len(result.messages), 2)
-        self.assertIsInstance(result.messages[0], Message)
-        self.assertEqual(result.messages[0].message, "Hello!")
-        self.assertEqual(result.messages[0].from_user, "user1")
-        self.assertIsNone(result.messages[0].recipient)
-        self.assertIsInstance(result.messages[1], Message)
-        self.assertEqual(result.messages[1].message, "Hi there!")
-        self.assertIsNone(result.messages[1].from_user)
-        self.assertEqual(result.messages[1].recipient, "user2")
+        assert isinstance(result, ServerResponse)
+        assert result.type == "ok"
+        assert len(result.messages) == 2
+        assert isinstance(result.messages[0], Message)
+        assert result.messages[0].message == "Hello!"
+        assert result.messages[0].from_user == "user1"
+        assert result.messages[0].recipient is None
+        assert isinstance(result.messages[1], Message)
+        assert result.messages[1].message == "Hi there!"
+        assert result.messages[1].from_user is None
+        assert result.messages[1].recipient == "user2"
 
-    def test_extract_json_invalid(self):
+    def test_extract_json_invalid(self) -> None:
         response = "invalid json"
         result = extract_json(response)
-        self.assertIsNone(result)
+        assert result is None
 
 
 if __name__ == "__main__":

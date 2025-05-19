@@ -1,22 +1,26 @@
+"""
+Module for managing sending messages and receiving messages
+"""
+
 # ds_messenger.py
 
-# Starter code for assignment 2 in ICS 32 Programming with Software Libraries in Python
-
-# Replace the following placeholders with your information.
+# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
 # STUDENT ID: 95535906
 
-import socket
-import json
-import time
 
-from ds_protocol import *
+import socket
+
+from ds_protocol import authenticate, extract_json, direct_message, fetch, ServerResponse
 
 
 class DirectMessage:
-    def __init__(self, message=None, recipient=None, sender=None, timestamp=None):
+    """
+    Class for message detail of content, sender, time and recipient 
+    """
+    def __init__(self, message=None, recipient=None, sender=None, timestamp=None) -> None:
         self.recipient = recipient
         self.message = message
         self.sender = sender
@@ -24,7 +28,10 @@ class DirectMessage:
 
 
 class DirectMessenger:
-    def __init__(self, dsuserver=None, username=None, password=None):
+    """
+    Class for authenticating, sending, fetching messages
+    """
+    def __init__(self, dsuserver=None, username=None, password=None) -> None:
         """
         Initialize DirectMessenger with persistent socket connection.
         The connection is established once and reused for all requests.
@@ -41,7 +48,7 @@ class DirectMessenger:
             self._connect()
             self._authenticate()
 
-    def _connect(self):
+    def _connect(self) -> bool:
         """Establish a persistent socket connection to the server."""
         try:
             if self.sock:
@@ -58,7 +65,7 @@ class DirectMessenger:
             self.recv_file = None
             return False
 
-    def _authenticate(self):
+    def _authenticate(self) -> bool:
         """Authenticate with the server using the persistent connection."""
         try:
             msg = authenticate(self.username, self.password)
@@ -74,7 +81,7 @@ class DirectMessenger:
             print(f"Authentication failed: {e}")
             return False
 
-    def _send_request(self, request):
+    def _send_request(self, request) -> None or ServerResponse:
         """Send a request to the server and get response using the persistent connection."""
         try:
             self.send_file.write(request + '\r\n')
@@ -142,7 +149,7 @@ class DirectMessenger:
             print(f"Failed to retrieve all messages: {e}")
             return []
 
-    def close(self):
+    def close(self) -> None:
         """Close the persistent socket connection and associated files."""
         try:
             if self.send_file:
@@ -154,6 +161,6 @@ class DirectMessenger:
         except Exception:
             pass
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Ensure the socket connection is closed when the object is destroyed."""
         self.close()

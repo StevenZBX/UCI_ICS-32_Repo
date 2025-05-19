@@ -1,12 +1,15 @@
+"""
+The main module of the Direct Messenger
+"""
+
 # a3.py
 
 # Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
-# Replace the following placeholders with your information.
-
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
 # STUDENT ID: 95535906
+
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
@@ -15,43 +18,46 @@ import json
 from ds_messenger import DirectMessenger, DirectMessage
 
 
-class LoginWindow:
+class LoginWindow(tk.Tk):
     def __init__(self) -> None:
-        """Initialize the login window UI."""
-        self.window = tk.Tk()
-        self.window.title("Direct Messenger")
-        self.window.geometry("300x250")
-        self.window.resizable(False, False)
-        main_frame = ttk.Frame(self.window, padding="20")
+        """Initialize the login window."""
+        super().__init__()
+        self.title("Direct Messenger")
+        self.geometry("300x250")
+        self.resizable(False, False)
+        main_frame = ttk.Frame(self, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
         title_label = ttk.Label(main_frame, text="Direct Messenger",
                                font=("Helvetica", 14))
         title_label.pack(pady=(0, 20))
         username_frame = ttk.Frame(main_frame)
         username_frame.pack(fill=tk.X, pady=(0, 10))
+        # User input username
         ttk.Label(username_frame, text="Username:").pack(side=tk.LEFT)
         self.username_entry = ttk.Entry(username_frame, width=30)
         self.username_entry.pack(side=tk.LEFT, padx=(10, 0))
         password_frame = ttk.Frame(main_frame)
         password_frame.pack(fill=tk.X, pady=(0, 20))
+        # User input password
         ttk.Label(password_frame, text="Password:").pack(side=tk.LEFT)
         self.password_entry = ttk.Entry(password_frame, show="*", width=30)
         self.password_entry.pack(side=tk.LEFT, padx=(10, 0))
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=(0, 10))
         login_button = ttk.Button(button_frame, text="Login",
-                                 command=self.do_login, width=20)
+                                 command=self.login, width=20)
         login_button.pack(pady=10)
-        self.window.bind('<Return>', lambda e: self.do_login())
+        self.bind('<Return>', lambda e: self.login())
         self.username_entry.focus()
-        self.window.update_idletasks()
-        width = self.window.winfo_width()
-        height = self.window.winfo_height()
-        x = (self.window.winfo_screenwidth() // 2) - (width // 2)
-        y = (self.window.winfo_screenheight() // 2) - (height // 2)
-        self.window.geometry(f'{width}x{height}+{x}+{y}')
+        self.update_idletasks()
+        # Find the center of screen and display on there
+        width = self.winfo_width()
+        height = self.winfo_height()
+        x = (self.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.winfo_screenheight() // 2) - (height // 2)
+        self.geometry(f'{width}x{height}+{x}+{y}')
 
-    def do_login(self) -> None:
+    def login(self) -> None:
         """Handle login button click and authenticate user."""
         username = self.username_entry.get()
         password = self.password_entry.get()
@@ -59,50 +65,55 @@ class LoginWindow:
             messenger = DirectMessenger(dsuserver='127.0.0.1',
                                         username=username, password=password)
             if messenger.token:
-                self.window.destroy()  # if login successful, close the login window
-                ChatWindow(messenger)
+                self.withdraw()  # Hide login window
+                ChatWindow(self, messenger)
             else:
                 messagebox.showerror("Error", "Login or registration failed!")
 
-    def run(self) -> None:
-        """Start the login window main loop."""
-        self.window.mainloop()
 
-
-class ChatWindow:
-    def __init__(self, messenger: DirectMessenger) -> None:
+class ChatWindow(tk.Toplevel):
+    def __init__(self, master, messenger: DirectMessenger) -> None:
         """Initialize the chat window UI."""
+        super().__init__(master)
         self.path = "./store"
         self.file = "user.json"
         self.messenger = messenger
         self.username = messenger.username
-        self.window = tk.Tk()
-        self.window.title(f"Chat - {messenger.username}")
-        self.window.geometry("900x600")
+        self.title(f"Chat - {messenger.username}")
+        self.geometry("900x600")
         self.contacts = set()
         self.messages = {}
-        self.main_container = ttk.PanedWindow(self.window, orient=tk.HORIZONTAL)
+        self.main_container = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
         self.main_container.pack(fill=tk.BOTH, expand=True)
         self.contacts_frame = ttk.Frame(self.main_container)
         self.main_container.add(self.contacts_frame, weight=1)
         self.messages_frame = ttk.Frame(self.main_container)
         self.main_container.add(self.messages_frame, weight=3)
-        self.setup_contacts_list()
-        self.setup_message_area()
+        # load the interface with contacts, message area, message input area, sended message area
+        self.contacts_area()
+        self.message_area()
         self.setup_menu()
         self.load_data()
         self.check_new_messages()
+        self.protocol("WM_DELETE_WINDOW", self.close)
 
-    def setup_contacts_list(self) -> None:
+    def close(self):
+        """
+        Close the interface
+        """
+        self.destroy()
+        self.master.destroy()
+
+    def contacts_area(self) -> None:
         """Setup the contacts list widget."""
         ttk.Label(self.contacts_frame, text="Contacts").pack(pady=5)
         self.contacts_tree = ttk.Treeview(self.contacts_frame, selectmode='browse')
         self.contacts_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.contacts_tree.bind('<<TreeviewSelect>>', self.on_contact_select)
+        self.contacts_tree.bind('<<TreeviewSelect>>', self.contact_select)
         ttk.Button(self.contacts_frame, text="Add Contact",
                    command=self.add_contact).pack(pady=5)
 
-    def setup_message_area(self) -> None:
+    def message_area(self) -> None:
         """Setup the message display and input area."""
         self.message_display = tk.Text(self.messages_frame, wrap=tk.WORD,
                                        state=tk.DISABLED)
@@ -117,12 +128,12 @@ class ChatWindow:
 
     def setup_menu(self) -> None:
         """Setup the menu bar."""
-        menubar = tk.Menu(self.window)
-        self.window.config(menu=menubar)
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.window.destroy)
+        file_menu.add_command(label="Exit", command=self.destroy)
 
     def add_contact(self) -> None:
         """Add a new contact to the contacts list."""
@@ -133,7 +144,7 @@ class ChatWindow:
             if contact not in self.messages:
                 self.messages[contact] = []
 
-    def on_contact_select(self, event) -> None:
+    def contact_select(self, event) -> None:
         """Handle contact selection event."""
         selection = self.contacts_tree.selection()
         if selection:
@@ -196,7 +207,7 @@ class ChatWindow:
                 selection = self.contacts_tree.selection()
                 if selection and self.contacts_tree.item(selection[0])['text'] == sender:
                     self.display_messages(sender)
-        self.window.after(5000, self.check_new_messages)
+        self.after(5000, self.check_new_messages)
 
     def load_data(self) -> None:
         """Load only read history messages from user.json file."""
@@ -226,15 +237,11 @@ class ChatWindow:
         except Exception as e:
             print(f"Error loading notebook: {e}")
 
-    def run(self) -> None:
-        """Start the chat window main loop."""
-        self.window.mainloop()
-
 
 def main() -> None:
     """Main entry point for the application."""
     login = LoginWindow()
-    login.run()
+    login.mainloop()
 
 
 if __name__ == "__main__":

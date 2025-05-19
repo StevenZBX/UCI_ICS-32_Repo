@@ -1,12 +1,15 @@
+"""
+The ds_protocol module is a rule for login in and sending message for user in the direct messenger.
+"""
+
 # ds_protocol.py
 
-# Starter code for assignment 2 in ICS 32 Programming with Software Libraries in Python
-
-# Replace the following placeholders with your information.
+# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
 # STUDENT ID: 95535906
+
 
 import json
 from collections import namedtuple
@@ -62,12 +65,10 @@ def extract_json(json_msg: str) -> ServerResponse:
     try:
         json_obj = json.loads(json_msg)
         response = json_obj['response']
-        
         # Extract basic response fields
         type_val = response.get('type')
         message = response.get('message')
         token = response.get('token')
-        
         # Extract messages if they exist
         messages = []
         if 'messages' in response:
@@ -87,12 +88,7 @@ def extract_json(json_msg: str) -> ServerResponse:
                         timestamp=msg['timestamp'],
                         recipient=msg['recipient']
                     ))
-        
         return ServerResponse(type_val, message, token, messages)
-        
     except json.JSONDecodeError:
         print("Json cannot be decoded.")
-        return None
-    except KeyError as e:
-        print(f"Missing key in JSON response: {e}")
         return None
