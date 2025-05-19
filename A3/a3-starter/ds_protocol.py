@@ -12,11 +12,13 @@ import json
 from collections import namedtuple
 import time
 
+
 # Create namedtuples to hold the values we expect to retrieve from json messages
 Message = namedtuple('Message', ['message', 'from_user', 'timestamp', 'recipient'])
 ServerResponse = namedtuple('ServerResponse', ['type', 'message', 'token', 'messages'])
 
-def join(username: str, password: str) -> str:
+
+def authenticate(username: str, password: str) -> str:
     """
     Create an authenticate request message
     """
@@ -26,6 +28,7 @@ def join(username: str, password: str) -> str:
             "password": password
         }
     })
+
 
 def direct_message(token: str, message: str, recipient: str) -> str:
     """
@@ -40,6 +43,7 @@ def direct_message(token: str, message: str, recipient: str) -> str:
         }
     })
 
+
 def fetch(token: str, status: str) -> str:
     """
     Create a fetch request for messages
@@ -49,6 +53,7 @@ def fetch(token: str, status: str) -> str:
         "token": token,
         "fetch": status
     })
+
 
 def extract_json(json_msg: str) -> ServerResponse:
     """
