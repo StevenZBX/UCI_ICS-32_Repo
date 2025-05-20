@@ -14,6 +14,7 @@ The main module of the Direct Messenger
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import json
+import os
 
 from ds_messenger import DirectMessenger, DirectMessage
 
@@ -62,13 +63,19 @@ class LoginWindow(tk.Tk):
         username = self.username_entry.get()
         password = self.password_entry.get()
         if username and password:
-            messenger = DirectMessenger(dsuserver='127.0.0.1',
-                                        username=username, password=password)
-            if messenger.token:
+            try:
+                messenger = DirectMessenger(dsuserver='127.0.0.1',
+                                          username=username, password=password)
                 self.withdraw()  # Hide login window
                 ChatWindow(self, messenger)
-            else:
-                messagebox.showerror("Error", "Login or registration failed!")
+            except Exception as e:
+                # If server is not running, create a messenger without server connection
+                messenger = DirectMessenger(username=username, password=password)
+                messenger.token = None  # Indicate offline mode
+                self.withdraw()
+                ChatWindow(self, messenger)
+                messagebox.showwarning("Offline Mode", 
+                                     "Server is not available. Running in offline mode.\nYou can view history messages but cannot send new messages.")
 
 
 class ChatWindow(tk.Toplevel):
@@ -79,7 +86,8 @@ class ChatWindow(tk.Toplevel):
         self.file = "user.json"
         self.messenger = messenger
         self.username = messenger.username
-        self.title(f"Chat - {messenger.username}")
+        self.is_online = messenger.token is not None
+        self.title(f"Chat - {messenger.username} {'(Offline)' if not self.is_online else ''}")
         self.geometry("900x600")
         self.contacts = set()
         self.messages = {}
@@ -94,7 +102,8 @@ class ChatWindow(tk.Toplevel):
         self.message_area()
         self.setup_menu()
         self.load_data()
-        self.check_new_messages()
+        if self.is_online:
+            self.check_new_messages()
         self.protocol("WM_DELETE_WINDOW", self.close)
 
     def close(self):
@@ -122,8 +131,11 @@ class ChatWindow(tk.Toplevel):
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         self.message_input = tk.Text(input_frame, height=3, wrap=tk.WORD)
         self.message_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        ttk.Button(input_frame, text="Send", command=self.send_message).pack(
-            side=tk.RIGHT, padx=5)
+        send_button = ttk.Button(input_frame, text="Send", command=self.send_message)
+        send_button.pack(side=tk.RIGHT, padx=5)
+        if not self.is_online:
+            send_button.state(['disabled'])
+            self.message_input.config(state=tk.DISABLED)
         self.message_input.bind('<Control-Return>', lambda e: self.send_message())
 
     def setup_menu(self) -> None:
@@ -137,6 +149,10 @@ class ChatWindow(tk.Toplevel):
 
     def add_contact(self) -> None:
         """Add a new contact to the contacts list."""
+        if not self.is_online:
+            messagebox.showwarning("Offline Mode", 
+                                 "Cannot add contacts while offline.")
+            return
         contact = simpledialog.askstring("Add Contact", "Enter username:")
         if contact:
             self.contacts.add(contact)
@@ -171,6 +187,10 @@ class ChatWindow(tk.Toplevel):
 
     def send_message(self) -> None:
         """Send a message to the selected contact."""
+        if not self.is_online:
+            messagebox.showwarning("Offline Mode", 
+                                 "Cannot send messages while offline.")
+            return
         selection = self.contacts_tree.selection()
         if not selection:
             messagebox.showerror("Error", "Please select a contact!")
@@ -191,23 +211,31 @@ class ChatWindow(tk.Toplevel):
 
     def check_new_messages(self) -> None:
         """Periodically check for new messages from the server and update the UI."""
-        if self.messenger and self.messenger.token:
-            new_messages = self.messenger.retrieve_new()
-            for msg in new_messages:
-                sender = msg.sender
-                if sender not in self.contacts:
-                    self.contacts.add(sender)
-                    self.contacts_tree.insert('', 'end', text=sender)
-                if sender not in self.messages:
-                    self.messages[sender] = []
-                if not any(m.timestamp == msg.timestamp and
-                           m.message == msg.message and
-                           m.sender == msg.sender for m in self.messages[sender]):
-                    self.messages[sender].append(msg)
-                selection = self.contacts_tree.selection()
-                if selection and self.contacts_tree.item(selection[0])['text'] == sender:
-                    self.display_messages(sender)
-        self.after(5000, self.check_new_messages)
+        if self.is_online and self.messenger and self.messenger.token:
+            try:
+                new_messages = self.messenger.retrieve_new()
+                for msg in new_messages:
+                    sender = msg.sender
+                    if sender not in self.contacts:
+                        self.contacts.add(sender)
+                        self.contacts_tree.insert('', 'end', text=sender)
+                    if sender not in self.messages:
+                        self.messages[sender] = []
+                    if not any(m.timestamp == msg.timestamp and
+                               m.message == msg.message and
+                               m.sender == msg.sender for m in self.messages[sender]):
+                        self.messages[sender].append(msg)
+                    selection = self.contacts_tree.selection()
+                    if selection and self.contacts_tree.item(selection[0])['text'] == sender:
+                        self.display_messages(sender)
+            except Exception:
+                self.is_online = False
+                self.title(f"Chat - {self.messenger.username} (Offline)")
+                messagebox.showwarning("Connection Lost", 
+                                     "Lost connection to server. Running in offline mode.")
+                return
+        if self.is_online:
+            self.after(5000, self.check_new_messages)
 
     def load_data(self) -> None:
         """Load only read history messages from user.json file."""
@@ -235,7 +263,7 @@ class ChatWindow(tk.Toplevel):
                         self.messages[contact] = []
                     self.messages[contact].append(dm)
         except Exception as e:
-            print(f"Error loading notebook: {e}")
+            print(f"Error loading history: {e}")
 
 
 def main() -> None:
