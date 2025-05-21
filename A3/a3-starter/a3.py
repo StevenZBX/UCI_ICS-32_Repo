@@ -14,7 +14,6 @@ The main module of the Direct Messenger
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 import json
-import os
 
 from ds_messenger import DirectMessenger, DirectMessage
 
@@ -28,9 +27,9 @@ class LoginWindow(tk.Tk):
         self.resizable(False, False)
         main_frame = ttk.Frame(self, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
-        title_label = ttk.Label(main_frame, text="Direct Messenger",
+        title = ttk.Label(main_frame, text="Direct Messenger",
                                font=("Helvetica", 14))
-        title_label.pack(pady=(0, 20))
+        title.pack(pady=(0, 20))
         username_frame = ttk.Frame(main_frame)
         username_frame.pack(fill=tk.X, pady=(0, 10))
         # User input username
@@ -75,15 +74,14 @@ class LoginWindow(tk.Tk):
                 self.withdraw()
                 ChatWindow(self, messenger)
                 messagebox.showwarning("Offline Mode", 
-                                     "Server is not available. Running in offline mode.\nYou can view history messages but cannot send new messages.")
+                                       "Server is not available. Running in offline mode.\nYou can view history messages but cannot send new messages.")
 
 
 class ChatWindow(tk.Toplevel):
     def __init__(self, master, messenger: DirectMessenger) -> None:
         """Initialize the chat window UI."""
         super().__init__(master)
-        self.path = "./store"
-        self.file = "user.json"
+        self.file = "./store/users.json"
         self.messenger = messenger
         self.username = messenger.username
         self.is_online = messenger.token is not None
@@ -133,9 +131,6 @@ class ChatWindow(tk.Toplevel):
         self.message_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         send_button = ttk.Button(input_frame, text="Send", command=self.send_message)
         send_button.pack(side=tk.RIGHT, padx=5)
-        if not self.is_online:
-            send_button.state(['disabled'])
-            self.message_input.config(state=tk.DISABLED)
         self.message_input.bind('<Control-Return>', lambda e: self.send_message())
 
     def setup_menu(self) -> None:
@@ -151,7 +146,7 @@ class ChatWindow(tk.Toplevel):
         """Add a new contact to the contacts list."""
         if not self.is_online:
             messagebox.showwarning("Offline Mode", 
-                                 "Cannot add contacts while offline.")
+                                   "Cannot add contacts while offline.")
             return
         contact = simpledialog.askstring("Add Contact", "Enter username:")
         if contact:
@@ -188,7 +183,7 @@ class ChatWindow(tk.Toplevel):
     def send_message(self) -> None:
         """Send a message to the selected contact."""
         if not self.is_online:
-            messagebox.showwarning("Offline Mode", 
+            messagebox.showerror("Offline Mode", 
                                  "Cannot send messages while offline.")
             return
         selection = self.contacts_tree.selection()
@@ -232,7 +227,7 @@ class ChatWindow(tk.Toplevel):
                 self.is_online = False
                 self.title(f"Chat - {self.messenger.username} (Offline)")
                 messagebox.showwarning("Connection Lost", 
-                                     "Lost connection to server. Running in offline mode.")
+                                       "Lost connection to server. Running in offline mode.")
                 return
         if self.is_online:
             self.after(5000, self.check_new_messages)
@@ -240,7 +235,7 @@ class ChatWindow(tk.Toplevel):
     def load_data(self) -> None:
         """Load only read history messages from user.json file."""
         try:
-            with open('./store/users.json', 'r') as f:
+            with open(self.file, 'r') as f:
                 data = json.load(f)
             user_data = data.get(self.username)
             if user_data and 'messages' in user_data:
