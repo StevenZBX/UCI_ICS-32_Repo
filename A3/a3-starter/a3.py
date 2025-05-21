@@ -4,7 +4,6 @@ The main module of the Direct Messenger
 
 # a3.py
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
@@ -19,6 +18,9 @@ from ds_messenger import DirectMessenger, DirectMessage
 
 
 class LoginWindow(tk.Tk):
+    """
+    Class for user to login in
+    """
     def __init__(self) -> None:
         """Initialize the login window."""
         super().__init__()
@@ -28,7 +30,7 @@ class LoginWindow(tk.Tk):
         main_frame = ttk.Frame(self, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
         title = ttk.Label(main_frame, text="Direct Messenger",
-                               font=("Helvetica", 14))
+                          font=("Helvetica", 14))
         title.pack(pady=(0, 20))
         username_frame = ttk.Frame(main_frame)
         username_frame.pack(fill=tk.X, pady=(0, 10))
@@ -45,7 +47,7 @@ class LoginWindow(tk.Tk):
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill=tk.X, pady=(0, 10))
         login_button = ttk.Button(button_frame, text="Login",
-                                 command=self.login, width=20)
+                                  command=self.login, width=20)
         login_button.pack(pady=10)
         self.bind('<Return>', lambda e: self.login())
         self.username_entry.focus()
@@ -63,21 +65,28 @@ class LoginWindow(tk.Tk):
         password = self.password_entry.get()
         if username and password:
             try:
-                messenger = DirectMessenger(dsuserver='127.0.0.1',
-                                          username=username, password=password)
-                self.withdraw()  # Hide login window
-                ChatWindow(self, messenger)
-            except Exception as e:
-                # If server is not running, create a messenger without server connection
-                messenger = DirectMessenger(username=username, password=password)
-                messenger.token = None  # Indicate offline mode
+                messenger = DirectMessenger(username=username,
+                                            password=password)
+                # Hide login window
                 self.withdraw()
                 ChatWindow(self, messenger)
-                messagebox.showwarning("Offline Mode", 
-                                       "Server is not available. Running in offline mode.\nYou can view history messages but cannot send new messages.")
+            except Exception:
+                # If server is not running
+                # create a messenger without server connection
+                messenger = DirectMessenger(username=username,
+                                            password=password)
+                # Indicate offline mode
+                messenger.token = None
+                self.withdraw()
+                ChatWindow(self, messenger)
+                messagebox.showwarning("Offline Mode",
+                                       "Server is not available.")
 
 
 class ChatWindow(tk.Toplevel):
+    """
+    Class for the chatting window
+    """
     def __init__(self, master, messenger: DirectMessenger) -> None:
         """Initialize the chat window UI."""
         super().__init__(master)
@@ -85,7 +94,7 @@ class ChatWindow(tk.Toplevel):
         self.messenger = messenger
         self.username = messenger.username
         self.is_online = messenger.token is not None
-        self.title(f"Chat - {messenger.username} {'(Offline)' if not self.is_online else ''}")
+        self.title(f"Chat - {messenger.username}")
         self.geometry("900x600")
         self.contacts = set()
         self.messages = {}
@@ -95,7 +104,8 @@ class ChatWindow(tk.Toplevel):
         self.main_container.add(self.contacts_frame, weight=1)
         self.messages_frame = ttk.Frame(self.main_container)
         self.main_container.add(self.messages_frame, weight=3)
-        # load the interface with contacts, message area, message input area, sended message area
+        # load the interface with contacts
+        #  message area, message input area, sended message area
         self.contacts_area()
         self.message_area()
         self.setup_menu()
@@ -114,7 +124,8 @@ class ChatWindow(tk.Toplevel):
     def contacts_area(self) -> None:
         """Setup the contacts list widget."""
         ttk.Label(self.contacts_frame, text="Contacts").pack(pady=5)
-        self.contacts_tree = ttk.Treeview(self.contacts_frame, selectmode='browse')
+        self.contacts_tree = ttk.Treeview(self.contacts_frame,
+                                          selectmode='browse')
         self.contacts_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         self.contacts_tree.bind('<<TreeviewSelect>>', self.contact_select)
         ttk.Button(self.contacts_frame, text="Add Contact",
@@ -129,9 +140,11 @@ class ChatWindow(tk.Toplevel):
         input_frame.pack(fill=tk.X, padx=5, pady=5)
         self.message_input = tk.Text(input_frame, height=3, wrap=tk.WORD)
         self.message_input.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        send_button = ttk.Button(input_frame, text="Send", command=self.send_message)
+        send_button = ttk.Button(input_frame, text="Send",
+                                 command=self.send_message)
         send_button.pack(side=tk.RIGHT, padx=5)
-        self.message_input.bind('<Control-Return>', lambda e: self.send_message())
+        self.message_input.bind('<Control-Return>',
+                                lambda e: self.send_message())
 
     def setup_menu(self) -> None:
         """Setup the menu bar."""
@@ -145,7 +158,7 @@ class ChatWindow(tk.Toplevel):
     def add_contact(self) -> None:
         """Add a new contact to the contacts list."""
         if not self.is_online:
-            messagebox.showwarning("Offline Mode", 
+            messagebox.showwarning("Offline Mode",
                                    "Cannot add contacts while offline.")
             return
         contact = simpledialog.askstring("Add Contact", "Enter username:")
@@ -183,7 +196,7 @@ class ChatWindow(tk.Toplevel):
     def send_message(self) -> None:
         """Send a message to the selected contact."""
         if not self.is_online:
-            messagebox.showerror("Offline Mode", 
+            messagebox.showerror("Offline Mode",
                                  "Cannot send messages while offline.")
             return
         selection = self.contacts_tree.selection()
@@ -205,7 +218,10 @@ class ChatWindow(tk.Toplevel):
                 messagebox.showerror("Error", "Failed to send message!")
 
     def check_new_messages(self) -> None:
-        """Periodically check for new messages from the server and update the UI."""
+        """
+        Periodically check for new messages
+        from the server and update the UI.
+        """
         if self.is_online and self.messenger and self.messenger.token:
             try:
                 new_messages = self.messenger.retrieve_new()
@@ -218,7 +234,8 @@ class ChatWindow(tk.Toplevel):
                         self.messages[sender] = []
                     if not any(m.timestamp == msg.timestamp and
                                m.message == msg.message and
-                               m.sender == msg.sender for m in self.messages[sender]):
+                               m.sender == msg.sender
+                               for m in self.messages[sender]):
                         self.messages[sender].append(msg)
                     selection = self.contacts_tree.selection()
                     if selection and self.contacts_tree.item(selection[0])['text'] == sender:
@@ -226,8 +243,7 @@ class ChatWindow(tk.Toplevel):
             except Exception:
                 self.is_online = False
                 self.title(f"Chat - {self.messenger.username} (Offline)")
-                messagebox.showwarning("Connection Lost", 
-                                       "Lost connection to server. Running in offline mode.")
+                messagebox.showwarning("Connection Lost")
                 return
         if self.is_online:
             self.after(5000, self.check_new_messages)
@@ -235,7 +251,7 @@ class ChatWindow(tk.Toplevel):
     def load_data(self) -> None:
         """Load only read history messages from user.json file."""
         try:
-            with open(self.file, 'r') as f:
+            with open(self.file, 'r', encoding="utf-8") as f:
                 data = json.load(f)
             user_data = data.get(self.username)
             if user_data and 'messages' in user_data:

@@ -4,7 +4,6 @@ Module for managing sending messages and receiving messages
 
 # ds_messenger.py
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
@@ -13,14 +12,16 @@ Module for managing sending messages and receiving messages
 
 import socket
 
-from ds_protocol import authenticate, extract_json, direct_message, fetch, ServerResponse
+from ds_protocol import authenticate, extract_json
+from ds_protocol import direct_message, fetch, ServerResponse
 
 
 class DirectMessage:
     """
-    Class for message detail of content, sender, time and recipient 
+    Class for message detail of content, sender, time and recipient
     """
-    def __init__(self, message=None, recipient=None, sender=None, timestamp=None) -> None:
+    def __init__(self, message=None, recipient=None,
+                 sender=None, timestamp=None) -> None:
         self.recipient = recipient
         self.message = message
         self.sender = sender
@@ -81,8 +82,11 @@ class DirectMessenger:
             print(f"Authentication failed: {e}")
             return False
 
-    def _send_request(self, request) -> None or ServerResponse:
-        """Send a request to the server and get response using the persistent connection."""
+    def _send_request(self, request: str) -> None or ServerResponse:
+        """
+        Send a request to the server
+        and get response using the persistent connection.
+        """
         try:
             self.send_file.write(request + '\r\n')
             self.send_file.flush()
@@ -93,7 +97,10 @@ class DirectMessenger:
             return None
 
     def send(self, message: str, recipient: str) -> bool:
-        """Send a direct message to a recipient using the persistent connection."""
+        """
+        Send a direct message to a recipient
+        using the persistent connection.
+        """
         if not self.token:
             return False
         try:
@@ -162,5 +169,7 @@ class DirectMessenger:
             pass
 
     def __del__(self) -> None:
-        """Ensure the socket connection is closed when the object is destroyed."""
+        """
+        Ensure the socket connection is closed when the object is destroyed.
+        """
         self.close()

@@ -1,10 +1,10 @@
 """
-The ds_protocol module is a rule for login in and sending message for user in the direct messenger.
+The ds_protocol module is a rule for login in
+and sending message for user in the direct messenger.
 """
 
 # ds_protocol.py
 
-# Starter code for assignment 3 in ICS 32 Programming with Software Libraries in Python
 
 # NAME: Boxuan Zhang
 # EMAIL: boxuanz3@uci.edu
@@ -16,9 +16,11 @@ from collections import namedtuple
 import time
 
 
-# Create namedtuples to hold the values we expect to retrieve from json messages
-Message = namedtuple('Message', ['message', 'from_user', 'timestamp', 'recipient'])
-ServerResponse = namedtuple('ServerResponse', ['type', 'message', 'token', 'messages'])
+# Create namedtuples to hold the values expect to retrieve from json messages
+Message = namedtuple('Message',
+                     ['message', 'from_user', 'timestamp', 'recipient'])
+ServerResponse = namedtuple('ServerResponse',
+                            ['type', 'message', 'token', 'messages'])
 
 
 def authenticate(username: str, password: str) -> str:
