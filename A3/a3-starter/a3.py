@@ -249,15 +249,13 @@ class ChatWindow(tk.Toplevel):
             self.after(5000, self.check_new_messages)
 
     def load_data(self) -> None:
-        """Load only read history messages from user.json file."""
+        """Load all history messages from user.json file."""
         try:
-            with open(self.file, 'r', encoding="utf-8") as f:
+            with open(self.file, 'r') as f:
                 data = json.load(f)
             user_data = data.get(self.username)
             if user_data and 'messages' in user_data:
                 for msg in user_data['messages']:
-                    if not msg.get('read', True):
-                        continue
                     dm = DirectMessage(
                         message=msg.get('message'),
                         sender=msg.get('from', self.username),

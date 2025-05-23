@@ -14,7 +14,10 @@ from ds_protocol import *
 
 
 class TestDSProtocol(unittest.TestCase):
+    """Unit tests for the ds_protocol module."""
+
     def test_join_request(self) -> None:
+        """Test authenticate request JSON structure."""
         username = "testuser"
         password = "testpass"
         request = authenticate(username, password)
@@ -24,6 +27,7 @@ class TestDSProtocol(unittest.TestCase):
         assert json_obj["authenticate"]["password"] == password
 
     def test_dm_request(self) -> None:
+        """Test direct_message request JSON structure."""
         token = "test-token"
         message = "Hello!"
         recipient = "recipient"
@@ -37,6 +41,7 @@ class TestDSProtocol(unittest.TestCase):
         assert "timestamp" in json_obj["directmessage"]
 
     def test_fetch_request(self) -> None:
+        """Test fetch request JSON structure."""
         token = "test-token"
         status = "all"
         request = fetch(token, status)
@@ -47,6 +52,7 @@ class TestDSProtocol(unittest.TestCase):
         assert json_obj["fetch"] == status
 
     def test_auth_response(self) -> None:
+        """Test extracting ServerResponse from authentication response."""
         response = '{"response": {"type": "ok", "message": "Welcome back, testuser", "token": "test-token"}}'
         result = extract_json(response)
         assert isinstance(result, ServerResponse)
@@ -56,6 +62,7 @@ class TestDSProtocol(unittest.TestCase):
         assert result.messages == []
 
     def test_messages_response(self) -> None:
+        """Test extracting ServerResponse with messages."""
         response = '''{
             "response": {
                 "type": "ok",
@@ -87,6 +94,7 @@ class TestDSProtocol(unittest.TestCase):
         assert result.messages[1].recipient == "user2"
 
     def test_invalid(self) -> None:
+        """Test extract_json returns None for invalid JSON."""
         response = "invalid json"
         result = extract_json(response)
         assert result is None

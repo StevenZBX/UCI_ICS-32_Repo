@@ -15,6 +15,8 @@ from ds_messenger import DirectMessage, DirectMessenger
 
 
 class TestDSMessenger(unittest.TestCase):
+    """Unit tests for the DirectMessenger and DirectMessage classes."""
+
     def test_direct_message_creation(self) -> None:
         """Test creating a DirectMessage object."""
         message = "Hello!"
@@ -74,74 +76,87 @@ class TestDSMessenger(unittest.TestCase):
             messenger.close()
             self.skipTest("Server not available or authentication failed")
 
-    def test_send_token_none(self):
+    def test_send_token_none(self) -> None:
+        """Test send returns False when token is None."""
         messenger = DirectMessenger()
         assert messenger.send("msg", "to") is False
 
-    def test_retrieve_new_token_none(self):
+    def test_retrieve_new_token_none(self) -> None:
+        """Test retrieve_new returns [] when token is None."""
         messenger = DirectMessenger()
         assert messenger.retrieve_new() == []
 
-    def test_retrieve_all_token_none(self):
+    def test_retrieve_all_token_none(self) -> None:
+        """Test retrieve_all returns [] when token is None."""
         messenger = DirectMessenger()
         assert messenger.retrieve_all() == []
 
-    def test_connect_exception(self):
+    def test_connect_exception(self) -> None:
+        """Test _connect handles exceptions and resets attributes."""
         messenger = DirectMessenger()
         with patch("socket.socket.connect", side_effect=Exception("fail")):
             assert messenger._connect() is False
 
-    def test_authenticate_exception(self):
+    def test_authenticate_exception(self) -> None:
+        """Test _authenticate handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.recv_file = MagicMock()
         messenger.send_file.write.side_effect = Exception("fail")
         assert messenger._authenticate() is False
 
-    def test_send_request_exception(self):
+    def test_send_request_exception(self) -> None:
+        """Test _send_request handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.send_file.write.side_effect = Exception("fail")
         assert messenger._send_request("req") is None
 
-    def test_send_exception(self):
+    def test_send_exception(self) -> None:
+        """Test send handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
             assert messenger.send("msg", "to") is False
 
-    def test_retrieve_new_exception(self):
+    def test_retrieve_new_exception(self) -> None:
+        """Test retrieve_new handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
             assert messenger.retrieve_new() == []
 
-    def test_retrieve_all_exception(self):
+    def test_retrieve_all_exception(self) -> None:
+        """Test retrieve_all handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
             assert messenger.retrieve_all() == []
 
-    def test_close_all_none(self):
+    def test_close_all_none(self) -> None:
+        """Test close when all file/socket attributes are None."""
         messenger = DirectMessenger()
         messenger.send_file = None
         messenger.recv_file = None
         messenger.sock = None
         messenger.close()  # Should not raise
 
-    def test_close_with_files(self):
+    def test_close_with_files(self) -> None:
+        """Test close when file/socket attributes are present."""
         messenger = DirectMessenger()
         messenger.send_file = MagicMock()
         messenger.recv_file = MagicMock()
         messenger.sock = MagicMock()
         messenger.close()  # Should call close on all
 
-    def test_del_calls_close(self):
+    def test_del_calls_close(self) -> None:
+        """Test __del__ calls close method."""
         messenger = DirectMessenger()
         messenger.close = MagicMock()
         del messenger  # Should call close
 
-    def test_connect_print_and_reset(self):
+    def test_connect_print_and_reset(self) -> None:
+        """Test _connect prints error and resets attributes on exception."""
         messenger = DirectMessenger()
         with patch("socket.socket.connect", side_effect=Exception("fail")):
             messenger.sock = None
@@ -157,7 +172,8 @@ class TestDSMessenger(unittest.TestCase):
         assert messenger.send_file is None
         assert messenger.recv_file is None
 
-    def test_authenticate_print(self):
+    def test_authenticate_print(self) -> None:
+        """Test _authenticate prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.recv_file = MagicMock()
@@ -171,7 +187,8 @@ class TestDSMessenger(unittest.TestCase):
         assert "Authentication failed" in captured.getvalue()
         assert result is False
 
-    def test_send_request_print(self):
+    def test_send_request_print(self) -> None:
+        """Test _send_request prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.send_file.write.side_effect = Exception("fail")
@@ -184,7 +201,8 @@ class TestDSMessenger(unittest.TestCase):
         assert "Failed to send request" in captured.getvalue()
         assert result is None
 
-    def test_send_print(self):
+    def test_send_print(self) -> None:
+        """Test send prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
@@ -197,7 +215,8 @@ class TestDSMessenger(unittest.TestCase):
             assert "Failed to send message" in captured.getvalue()
             assert result is False
 
-    def test_retrieve_new_print(self):
+    def test_retrieve_new_print(self) -> None:
+        """Test retrieve_new prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
@@ -210,7 +229,8 @@ class TestDSMessenger(unittest.TestCase):
             assert "Failed to retrieve new messages" in captured.getvalue()
             assert result == []
 
-    def test_retrieve_all_print(self):
+    def test_retrieve_all_print(self) -> None:
+        """Test retrieve_all prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
         with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
@@ -223,7 +243,8 @@ class TestDSMessenger(unittest.TestCase):
             assert "Failed to retrieve all messages" in captured.getvalue()
             assert result == []
 
-    def test_close_exception(self):
+    def test_close_exception(self) -> None:
+        """Test close handles exceptions when closing files or sockets."""
         messenger = DirectMessenger()
         class Dummy:
             def close(self): raise Exception("fail")
@@ -233,7 +254,8 @@ class TestDSMessenger(unittest.TestCase):
         # Should not raise
         messenger.close()
 
-    def test_del_calls_close_final(self):
+    def test_del_calls_close_final(self) -> None:
+        """Test __del__ calls close method。"""
         messenger = DirectMessenger()
         messenger.close = MagicMock()
         messenger.__del__()
@@ -241,4 +263,4 @@ class TestDSMessenger(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()
