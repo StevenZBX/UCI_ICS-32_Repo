@@ -11,6 +11,7 @@ Module for managing sending messages and receiving messages
 
 
 import socket
+import json
 
 from ds_protocol import authenticate, extract_json
 from ds_protocol import direct_message, fetch, ServerResponse
@@ -59,7 +60,7 @@ class DirectMessenger:
             self.send_file = self.sock.makefile('w')
             self.recv_file = self.sock.makefile('r')
             return True
-        except Exception as e:
+        except (OSError, ValueError, socket.error) as e:
             print(f"Failed to connect to server: {e}")
             self.sock = None
             self.send_file = None
@@ -69,6 +70,8 @@ class DirectMessenger:
     def _authenticate(self) -> bool:
         """Authenticate with the server using the persistent connection."""
         try:
+            if self.send_file is None or self.recv_file is None:
+                return False
             msg = authenticate(self.username, self.password)
             self.send_file.write(msg + '\r\n')
             self.send_file.flush()
@@ -78,7 +81,7 @@ class DirectMessenger:
                 self.token = result.token
                 return True
             return False
-        except Exception as e:
+        except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Authentication failed: {e}")
             return False
 
@@ -92,7 +95,7 @@ class DirectMessenger:
             self.send_file.flush()
             response = self.recv_file.readline()
             return extract_json(response)
-        except Exception as e:
+        except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Failed to send request: {e}")
             return None
 
@@ -107,7 +110,7 @@ class DirectMessenger:
             request = direct_message(self.token, message, recipient)
             result = self._send_request(request)
             return result and result.type == "ok"
-        except Exception as e:
+        except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Failed to send message: {e}")
             return False
 
@@ -129,7 +132,7 @@ class DirectMessenger:
                     messages.append(dm)
                 return messages
             return []
-        except Exception as e:
+        except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Failed to retrieve new messages: {e}")
             return []
 
@@ -152,7 +155,7 @@ class DirectMessenger:
                     messages.append(dm)
                 return messages
             return []
-        except Exception as e:
+        except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Failed to retrieve all messages: {e}")
             return []
 
@@ -165,11 +168,14 @@ class DirectMessenger:
                 self.recv_file.close()
             if self.sock:
                 self.sock.close()
-        except Exception:
+        except (OSError, ValueError, socket.error):
             pass
 
     def __del__(self) -> None:
         """
         Ensure the socket connection is closed when the object is destroyed.
         """
-        self.close()
+        try:
+            self.close()
+        except (OSError, ValueError, socket.error):
+            pass

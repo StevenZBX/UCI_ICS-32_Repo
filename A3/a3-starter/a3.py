@@ -70,7 +70,7 @@ class LoginWindow(tk.Tk):
                 # Hide login window
                 self.withdraw()
                 ChatWindow(self, messenger)
-            except Exception:
+            except (OSError, ConnectionError):
                 # If server is not running
                 # create a messenger without server connection
                 messenger = DirectMessenger(username=username,
@@ -170,6 +170,7 @@ class ChatWindow(tk.Toplevel):
 
     def contact_select(self, event) -> None:
         """Handle contact selection event."""
+        _ = event
         selection = self.contacts_tree.selection()
         if selection:
             contact = self.contacts_tree.item(selection[0])['text']
@@ -206,16 +207,19 @@ class ChatWindow(tk.Toplevel):
         contact = self.contacts_tree.item(selection[0])['text']
         message = self.message_input.get(1.0, tk.END).strip()
         if message:
-            if self.messenger.send(message, contact):
-                dm = DirectMessage(message=message, recipient=contact,
-                                   sender=self.messenger.username)
-                if contact not in self.messages:
-                    self.messages[contact] = []
-                self.messages[contact].append(dm)
-                self.message_input.delete(1.0, tk.END)
-                self.display_messages(contact)
-            else:
-                messagebox.showerror("Error", "Failed to send message!")
+            try:
+                if self.messenger.send(message, contact):
+                    dm = DirectMessage(message=message, recipient=contact,
+                                       sender=self.messenger.username)
+                    if contact not in self.messages:
+                        self.messages[contact] = []
+                    self.messages[contact].append(dm)
+                    self.message_input.delete(1.0, tk.END)
+                    self.display_messages(contact)
+                else:
+                    messagebox.showerror("Error", "Failed to send message!")
+            except (OSError, ValueError) as e:
+                messagebox.showerror("Error", f"Exception: {e}")
 
     def check_new_messages(self) -> None:
         """
@@ -240,18 +244,15 @@ class ChatWindow(tk.Toplevel):
                     selection = self.contacts_tree.selection()
                     if selection and self.contacts_tree.item(selection[0])['text'] == sender:
                         self.display_messages(sender)
-            except Exception:
-                self.is_online = False
-                self.title(f"Chat - {self.messenger.username} (Offline)")
-                messagebox.showwarning("Connection Lost")
-                return
+            except (OSError, ValueError) as e:
+                print(f"Error retrieving new messages: {e}")
         if self.is_online:
             self.after(5000, self.check_new_messages)
 
     def load_data(self) -> None:
         """Load all history messages from user.json file."""
         try:
-            with open(self.file, 'r') as f:
+            with open(self.file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             user_data = data.get(self.username)
             if user_data and 'messages' in user_data:
@@ -271,7 +272,7 @@ class ChatWindow(tk.Toplevel):
                     if contact not in self.messages:
                         self.messages[contact] = []
                     self.messages[contact].append(dm)
-        except Exception as e:
+        except (OSError, ValueError, json.JSONDecodeError) as e:
             print(f"Error loading history: {e}")
 
 

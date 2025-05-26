@@ -94,7 +94,7 @@ class TestDSMessenger(unittest.TestCase):
     def test_connect_exception(self) -> None:
         """Test _connect handles exceptions and resets attributes."""
         messenger = DirectMessenger()
-        with patch("socket.socket.connect", side_effect=Exception("fail")):
+        with patch("socket.socket.connect", side_effect=OSError("fail")):
             assert messenger._connect() is False
 
     def test_authenticate_exception(self) -> None:
@@ -102,35 +102,35 @@ class TestDSMessenger(unittest.TestCase):
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.recv_file = MagicMock()
-        messenger.send_file.write.side_effect = Exception("fail")
+        messenger.send_file.write.side_effect = OSError("fail")
         assert messenger._authenticate() is False
 
     def test_send_request_exception(self) -> None:
         """Test _send_request handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
-        messenger.send_file.write.side_effect = Exception("fail")
+        messenger.send_file.write.side_effect = OSError("fail")
         assert messenger._send_request("req") is None
 
     def test_send_exception(self) -> None:
         """Test send handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             assert messenger.send("msg", "to") is False
 
     def test_retrieve_new_exception(self) -> None:
         """Test retrieve_new handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             assert messenger.retrieve_new() == []
 
     def test_retrieve_all_exception(self) -> None:
         """Test retrieve_all handles exceptions and prints error."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             assert messenger.retrieve_all() == []
 
     def test_close_all_none(self) -> None:
@@ -158,7 +158,7 @@ class TestDSMessenger(unittest.TestCase):
     def test_connect_print_and_reset(self) -> None:
         """Test _connect prints error and resets attributes on exception."""
         messenger = DirectMessenger()
-        with patch("socket.socket.connect", side_effect=Exception("fail")):
+        with patch("socket.socket.connect", side_effect=OSError("fail")):
             messenger.sock = None
             from io import StringIO
             import sys
@@ -177,7 +177,7 @@ class TestDSMessenger(unittest.TestCase):
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
         messenger.recv_file = MagicMock()
-        messenger.send_file.write.side_effect = Exception("fail")
+        messenger.send_file.write.side_effect = OSError("fail")
         import sys
         from io import StringIO
         captured = StringIO()
@@ -191,7 +191,7 @@ class TestDSMessenger(unittest.TestCase):
         """Test _send_request prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.send_file = MagicMock()
-        messenger.send_file.write.side_effect = Exception("fail")
+        messenger.send_file.write.side_effect = OSError("fail")
         import sys
         from io import StringIO
         captured = StringIO()
@@ -205,7 +205,7 @@ class TestDSMessenger(unittest.TestCase):
         """Test send prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             import sys
             from io import StringIO
             captured = StringIO()
@@ -219,7 +219,7 @@ class TestDSMessenger(unittest.TestCase):
         """Test retrieve_new prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             import sys
             from io import StringIO
             captured = StringIO()
@@ -233,7 +233,7 @@ class TestDSMessenger(unittest.TestCase):
         """Test retrieve_all prints error on exception."""
         messenger = DirectMessenger("localhost", "u", "p")
         messenger.token = "token"
-        with patch.object(messenger, "_send_request", side_effect=Exception("fail")):
+        with patch.object(messenger, "_send_request", side_effect=OSError("fail")):
             import sys
             from io import StringIO
             captured = StringIO()
@@ -247,7 +247,7 @@ class TestDSMessenger(unittest.TestCase):
         """Test close handles exceptions when closing files or sockets."""
         messenger = DirectMessenger()
         class Dummy:
-            def close(self): raise Exception("fail")
+            def close(self): raise OSError("fail")
         messenger.send_file = Dummy()
         messenger.recv_file = Dummy()
         messenger.sock = Dummy()
