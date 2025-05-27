@@ -150,10 +150,6 @@ class ChatWindow(tk.Toplevel):
         """Setup the menu bar."""
         menubar = tk.Menu(self)
         self.config(menu=menubar)
-        file_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="File", menu=file_menu)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.destroy)
 
     def add_contact(self) -> None:
         """Add a new contact to the contacts list."""
