@@ -105,7 +105,7 @@ class ChatWindow(tk.Toplevel):
         self.messages_frame = ttk.Frame(self.main_container)
         self.main_container.add(self.messages_frame, weight=3)
         # load the interface with contacts
-        #  message area, message input area, sended message area
+        # message area, message input area, sended message area
         self.contacts_area()
         self.message_area()
         self.setup_menu()

@@ -10,7 +10,8 @@ Unit test for protocol module
 import unittest
 import json
 
-from ds_protocol import *
+from ds_protocol import ServerResponse, Message
+from ds_protocol import authenticate, direct_message, fetch, extract_json
 
 
 class TestDSProtocol(unittest.TestCase):
@@ -53,7 +54,8 @@ class TestDSProtocol(unittest.TestCase):
 
     def test_auth_response(self) -> None:
         """Test extracting ServerResponse from authentication response."""
-        response = '{"response": {"type": "ok", "message": "Welcome back, testuser", "token": "test-token"}}'
+        response = ('{"response": {"type": "ok", "message": "Welcome back, '
+                    'testuser", "token": "test-token"}}')
         result = extract_json(response)
         assert isinstance(result, ServerResponse)
         assert result.type == "ok"
@@ -101,4 +103,4 @@ class TestDSProtocol(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()

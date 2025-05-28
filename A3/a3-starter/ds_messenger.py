@@ -42,7 +42,6 @@ class DirectMessenger:
         self.username = username
         self.password = password
         self.dsuserver = dsuserver or "localhost"
-        self.port = 3001
         self.sock = None
         self.send_file = None
         self.recv_file = None
@@ -56,7 +55,7 @@ class DirectMessenger:
             if self.sock:
                 self.sock.close()
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.connect((self.dsuserver, self.port))
+            self.sock.connect((self.dsuserver, 3001))
             self.send_file = self.sock.makefile('w')
             self.recv_file = self.sock.makefile('r')
             return True
@@ -80,7 +79,6 @@ class DirectMessenger:
             if result and result.type == "ok":
                 self.token = result.token
                 return True
-            return False
         except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Authentication failed: {e}")
             return False
@@ -109,7 +107,9 @@ class DirectMessenger:
         try:
             request = direct_message(self.token, message, recipient)
             result = self._send_request(request)
-            return result and result.type == "ok"
+            if result and result.type == "ok":
+                return True
+            return False
         except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Failed to send message: {e}")
             return False
@@ -161,15 +161,12 @@ class DirectMessenger:
 
     def close(self) -> None:
         """Close the persistent socket connection and associated files."""
-        try:
-            if self.send_file:
-                self.send_file.close()
-            if self.recv_file:
-                self.recv_file.close()
-            if self.sock:
-                self.sock.close()
-        except (OSError, ValueError, socket.error):
-            pass
+        if self.send_file:
+            self.send_file.close()
+        if self.recv_file:
+            self.recv_file.close()
+        if self.sock:
+            self.sock.close()
 
     def __del__(self) -> None:
         """
