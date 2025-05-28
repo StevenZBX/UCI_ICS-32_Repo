@@ -64,23 +64,24 @@ class LoginWindow(tk.Tk):
         username = self.username_entry.get()
         password = self.password_entry.get()
         if username and password:
+            messenger = DirectMessenger(username=username,
+                                        password=password)
             try:
-                messenger = DirectMessenger(username=username,
-                                            password=password)
-                # Hide login window
-                self.withdraw()
-                ChatWindow(self, messenger)
+                if messenger.token:
+                    # Hide login window
+                    self.withdraw()
+                    ChatWindow(self, messenger)
+                else:
+                    messagebox.showwarning("Invalid input",
+                                           "Incorrect password")
             except (OSError, ConnectionError):
                 # If server is not running
                 # create a messenger without server connection
                 messenger = DirectMessenger(username=username,
                                             password=password)
-                # Indicate offline mode
                 messenger.token = None
                 self.withdraw()
                 ChatWindow(self, messenger)
-                messagebox.showwarning("Offline Mode",
-                                       "Server is not available.")
 
 
 class ChatWindow(tk.Toplevel):
