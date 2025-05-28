@@ -79,6 +79,7 @@ class DirectMessenger:
             if result and result.type == "ok":
                 self.token = result.token
                 return True
+            return False
         except (OSError, ValueError, socket.error, json.JSONDecodeError) as e:
             print(f"Authentication failed: {e}")
             return False

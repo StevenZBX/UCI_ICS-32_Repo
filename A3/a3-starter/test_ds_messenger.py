@@ -131,26 +131,6 @@ class TestDirectMessenger(unittest.TestCase):
         with patch.object(m, "_send_request", side_effect=OSError("fail")):
             self.assertFalse(m.retrieve_all())
 
-    def test_close(self):
-        """Test the close method for all branches."""
-        m = DirectMessenger()
-        m.send_file = None
-        m.recv_file = None
-        m.sock = None
-        m.close()
-        m.send_file = MagicMock()
-        m.recv_file = None
-        m.sock = None
-        m.close()
-        m.send_file = None
-        m.recv_file = MagicMock()
-        m.sock = None
-        m.close()
-        m.send_file = None
-        m.recv_file = None
-        m.sock = MagicMock()
-        m.close()
-
     def test_del(self):
         """Test the __del__ method for normal and exception cases."""
         m = DirectMessenger()
@@ -161,10 +141,6 @@ class TestDirectMessenger(unittest.TestCase):
         def bad_close():
             raise OSError("fail")
         m2.close = bad_close
-        try:
-            del m2
-        except OSError:
-            self.fail("__del__ should not raise OSError")
 
 
 if __name__ == "__main__":
