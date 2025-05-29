@@ -58,22 +58,29 @@ class LoginWindow(tk.Tk):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
+        self.file = "./store/users.json"
 
     def login(self) -> None:
         """Handle login button click and authenticate user."""
         username = self.username_entry.get()
         password = self.password_entry.get()
-        if username and password:
+        with open(self.file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        if username not in data:
             messenger = DirectMessenger(username=username,
                                         password=password)
             try:
-                if messenger.token:
-                    # Hide login window
-                    self.withdraw()
-                    ChatWindow(self, messenger)
-                else:
-                    messagebox.showwarning("Invalid input",
-                                           "Incorrect password")
+                self.withdraw()
+                ChatWindow(self, messenger)
+            except (OSError, ConnectionError):
+                messagebox.showwarning("Error", "No user data")
+        elif username and password == data.get(username)["password"]:
+            messenger = DirectMessenger(username=username,
+                                        password=password)
+            try:
+                # Hide login window
+                self.withdraw()
+                ChatWindow(self, messenger)
             except (OSError, ConnectionError):
                 # If server is not running
                 # create a messenger without server connection
@@ -82,6 +89,9 @@ class LoginWindow(tk.Tk):
                 messenger.token = None
                 self.withdraw()
                 ChatWindow(self, messenger)
+        else:
+            messagebox.showwarning("Invalid input",
+                                   "Incorrect password")
 
 
 class ChatWindow(tk.Toplevel):
@@ -238,9 +248,10 @@ class ChatWindow(tk.Toplevel):
                                m.sender == msg.sender
                                for m in self.messages[sender]):
                         self.messages[sender].append(msg)
-                    selection = self.contacts_tree.selection()
-                    if selection and self.contacts_tree.item(selection[0])['text'] == sender:
-                        self.display_messages(sender)
+                    sel = self.contacts_tree.selection()
+                    if sel:
+                        if self.contacts_tree.item(sel[0])['text'] == sender:
+                            self.display_messages(sender)
             except (OSError, ValueError) as e:
                 print(f"Error retrieving new messages: {e}")
         if self.is_online:
@@ -260,7 +271,10 @@ class ChatWindow(tk.Toplevel):
                         recipient=msg.get('recipient', ''),
                         timestamp=msg.get('timestamp')
                     )
-                    contact = dm.sender if dm.sender != self.username else dm.recipient
+                    if dm.sender != self.username:
+                        contact = dm.sender
+                    else:
+                        contact = dm.recipient
                     if not contact:
                         contact = "history"
                     if contact not in self.contacts:
