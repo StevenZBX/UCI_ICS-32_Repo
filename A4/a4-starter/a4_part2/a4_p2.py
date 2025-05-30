@@ -28,14 +28,16 @@ class Dog(ABC):
     def age(self):
         return self._age
 
-    def hungry(self):
+    def hungry(self, feed: callable):
         """
         The hungry method will check the hungry clock to see if some time has
         passed since the last feeding. If clock is greater than breed typical
         appetite, hunger assessment is randomly selected, otherwise hunger clock increases
         """
         if self.hunger_clock > self.appetite:
-            return bool(random.getrandbits(1))
+            if bool(random.getrandbits(1)) == True:
+                feed(self)
+                return True
         else:
             self.hunger_clock += 1
             return False
@@ -68,6 +70,11 @@ class AnatolianShepherd(Dog):
         return "Anatolian Shepherd"
     
 
+def feed_dog(dog):
+    print(f"Your {dog.breed()}, {dog.name()} is {h}hungry.")
+    dog.feed()
+    
+    
 if __name__ == '__main__':
     dog = None
     breed = input("What breed of dog would you like to care for? \n\n 1. German Shepherd \n 2. Golden Retriever \n 3. Anatolian Shepherd \n: ")
@@ -85,12 +92,9 @@ if __name__ == '__main__':
 
     q = False
     while q == False:
-        h = ""
-        if dog.hungry() == False:
-            h = "not "
+        h = "not" if dog.hungry(feed_dog) else ""
         print(f"Your {dog.breed()}, {dog.name()} is {h}hungry.")
         feed = input(f"Would you like to feed {dog.name()}? (y/n/q): ")
-
         if feed == "y":
             dog.feed()
         elif feed == "q":

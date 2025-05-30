@@ -1,8 +1,8 @@
-# NAME
-# EMAIL
-# STUDENT ID
+# NAME Boxuan Zhang
+# EMAIL boxuanz3@uci.edu
+# STUDENT ID 95535906
 
-import urllib
+import urllib.request
 import bookmark_connection as bmc
 from bookmark_connection import BookmarkProtocol
 
@@ -20,10 +20,23 @@ json = {'data':bmc.BookmarkProtocol.format(
                                 BookmarkProtocol(BookmarkProtocol.ADD, data))}
 """
 
-def http_api_test():
+def http_api_test(url, data):
     # TODO: write your http connection code here. You can use the above snippets to help
-    pass
+    json = {'data':bmc.BookmarkProtocol.format(
+                                BookmarkProtocol(BookmarkProtocol.ADD, data))}
+    test_data = urllib.parse.urlencode(json)
+    test_data = test_data.encode('utf-8')
+    header = {"content-type": "application/json"}
+    req = urllib.request.Request(url, test_data, header)
+
+    with urllib.request.urlopen(req) as response:
+        assert response.status == 200
+        return response.read().decode()
+
 
 if __name__ == '__main__':
     # TODO: call your test code from here. You might try writing a few different url tests.
-    pass
+    url = 'http://localhost:8000'
+    assert http_api_test(url, "https://example.com") == "ok"
+    assert http_api_test(url, "https://111.com") == "ok"
+    assert http_api_test(url, "http://12") == "ok"

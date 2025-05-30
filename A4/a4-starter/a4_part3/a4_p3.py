@@ -47,10 +47,10 @@ class Body(tk.Frame):
             url = str(urls[i]).strip()
             self._insert_tree(i, url)
             self._id+=i
+
     
     def _insert_tree(self, id, url):
         id = self.url_tree.insert('', id, id, text=url)
-
 
     def reset_ui(self):
         self.message_editor.delete(1.0, tk.END)
@@ -70,6 +70,9 @@ class Body(tk.Frame):
         
         message_frame = tk.Frame(master=self)
         message_frame.pack(fill=tk.BOTH, side=tk.TOP, expand=False)
+
+        self.message_editor = tk.Text(message_frame, height=3, wrap=tk.WORD)
+        self.message_editor.pack(fill=tk.X, padx=5, pady=5)
         
 
 
@@ -101,9 +104,9 @@ class Footer(tk.Frame):
         self.footer_label.configure(text=message)
     
     def _draw(self):
-        self.delete_button = tk.Button(master=self, text="Delete", width=20)
+        self.delete_button = tk.Button(master=self, text="Delete", width=20, command=self.delete_click())
         self.delete_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
-        self.add_button = tk.Button(master=self, text="Add", width=20)
+        self.add_button = tk.Button(master=self, text="Add", width=20, command=self.add_click())
         self.add_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
         
         self.footer_label = tk.Label(master=self, text="Open or Create New Bookmark File.")
@@ -189,7 +192,7 @@ class MainApp(tk.Frame):
         #menu_bar.add_cascade(menu=menu_file, label='Edit')
         
         menu_file.add_command(label='New', command=self.new_file)
-        menu_file.add_command(label='Open...')
+        menu_file.add_command(label='Open...', command=self.open_file)
         menu_file.add_command(label='Close', command=self.close)
         
         # NOTE: Additional menu items can be added by following the conventions here.
