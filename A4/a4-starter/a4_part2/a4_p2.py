@@ -1,10 +1,11 @@
-# NAME
-# EMAIL
-# STUDENT ID
+# NAME Boxuan Zhang
+# EMAIL boxuanz3@uci.edu
+# STUDENT ID 95535906
 
 
 from abc import ABC, abstractmethod
 import random,enum
+import time
 
 class Appetite:
     LOW = 3
@@ -34,13 +35,16 @@ class Dog(ABC):
         passed since the last feeding. If clock is greater than breed typical
         appetite, hunger assessment is randomly selected, otherwise hunger clock increases
         """
+        time.sleep(2)
         if self.hunger_clock > self.appetite:
-            if bool(random.getrandbits(1)) == True:
+            if bool(random.getrandbits(1)):
+                print(f'{self._name} is hungry now')
                 feed(self)
                 return True
         else:
             self.hunger_clock += 1
-            return False
+            print(f'{self._name} is not hungry now')
+        return False
 
     def feed(self):
         """
@@ -70,11 +74,8 @@ class AnatolianShepherd(Dog):
         return "Anatolian Shepherd"
     
 
-def feed_dog(dog):
-    print(f"Your {dog.breed()}, {dog.name()} is {h}hungry.")
-    dog.feed()
     
-    
+
 if __name__ == '__main__':
     dog = None
     breed = input("What breed of dog would you like to care for? \n\n 1. German Shepherd \n 2. Golden Retriever \n 3. Anatolian Shepherd \n: ")
@@ -90,12 +91,12 @@ if __name__ == '__main__':
     else:
         print("I didn't understand your entry, please run again.")
 
-    q = False
-    while q == False:
-        h = "not" if dog.hungry(feed_dog) else ""
-        print(f"Your {dog.breed()}, {dog.name()} is {h}hungry.")
-        feed = input(f"Would you like to feed {dog.name()}? (y/n/q): ")
-        if feed == "y":
-            dog.feed()
-        elif feed == "q":
-            break
+    def feed_dog(dog):
+        print(f"Feeding {dog._name} now ...")
+        dog.feed()
+    try:
+        while True:
+            dog.hungry(feed_dog)
+    except KeyboardInterrupt:
+        pass
+        

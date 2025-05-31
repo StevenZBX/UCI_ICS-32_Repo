@@ -1,6 +1,6 @@
-# NAME
-# EMAIL
-# STUDENT ID
+# NAME Boxuan Zhang
+# EMAIL boxuanz3@uci.edu
+# STUDENT ID 95535906
 
 import tkinter as tk
 from pathlib import Path
@@ -104,9 +104,9 @@ class Footer(tk.Frame):
         self.footer_label.configure(text=message)
     
     def _draw(self):
-        self.delete_button = tk.Button(master=self, text="Delete", width=20, command=self.delete_click())
+        self.delete_button = tk.Button(master=self, text="Delete", width=20, command=self.delete_click)
         self.delete_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
-        self.add_button = tk.Button(master=self, text="Add", width=20, command=self.add_click())
+        self.add_button = tk.Button(master=self, text="Add", width=20, command=self.add_click)
         self.add_button.pack(fill=tk.BOTH, side=tk.RIGHT, padx=5, pady=5)
         
         self.footer_label = tk.Label(master=self, text="Open or Create New Bookmark File.")
@@ -207,7 +207,7 @@ class MainApp(tk.Frame):
         # TODO: Add a callback for detecting changes to the online checkbox widget in the Footer class. Follow
         # the conventions established by the existing save_callback parameter.
         # HINT: There may already be a class method that serves as a good callback function!
-        self.footer = Footer(self.root)
+        self.footer = Footer(self.root, add_callback=self.add_clicked, delete_callback=self.delete_clicked)
         self.footer.pack(fill=tk.BOTH, side=tk.BOTTOM)
 
 if __name__ == "__main__":
