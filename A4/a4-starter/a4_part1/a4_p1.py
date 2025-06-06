@@ -39,4 +39,5 @@ if __name__ == '__main__':
     url = 'http://localhost:8000'
     assert http_api_test(url, "https://example.com") == "ok"
     assert http_api_test(url, "https://111.com") == "ok"
+    assert http_api_test(url, "https://test.com") == "ok"
     assert http_api_test(url, "123") == ""
